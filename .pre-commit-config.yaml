@@ -40,3 +40,9 @@ repos:
     rev: v1.8.0
     hooks:
     -   id: mypy
+
+-   repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.0.0
+    hooks:
+    -   id: conventional-pre-commit
+        stages: [commit-msg]
