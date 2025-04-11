@@ -2,11 +2,11 @@
 
 ## Setup and Initial Configuration
 - [x] Setup Python CLI app structure with Poetry
-- [ ] Install Click for CLI functionality
+- [x] Install Click for CLI functionality
 
 ## Development Tasks
-- [ ] Create main.py with "hello-world" command
-  - [ ] Implement command to output "Hello World" to console
+- [x] Create main.py with "hello-world" command
+  - [x] Implement command to output "Hello World" to console
 - [ ] Create "list-deck" command
   - [ ] Implement functionality to list available Anki decks through AnkiConnect plugin
   - [ ] Add proper error handling for AnkiConnect connection
