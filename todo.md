@@ -16,4 +16,4 @@
 - [ ] Add more Anki-related commands
 - [ ] Implement deck statistics
 - [ ] Add card management features
-- [ ] Create configuration system for user preferences 
+- [ ] Create configuration system for user preferences

@@ -6,9 +6,11 @@ authors = ["Dzianis"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.12"
 click = "^8.1.8"
 
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.6.0"
 
 [build-system]
 requires = ["poetry-core"]
