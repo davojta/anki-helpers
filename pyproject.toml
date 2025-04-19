@@ -2,8 +2,11 @@
 name = "anki-helpers"
 version = "0.1.0"
 description = "A CLI tool to help with Anki flashcards"
-authors = ["Dzianis"]
+authors = ["davojta"]
 readme = "README.md"
+
+[tool.poetry.scripts]
+anki-helpers = "anki_helpers.cli:cli"
 
 [tool.poetry.dependencies]
 python = "^3.12"
