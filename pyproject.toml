@@ -12,15 +12,18 @@ anki-helpers = "anki_helpers.cli:cli"
 python = "^3.12"
 click = "^8.1.8"
 requests = "^2.31.0"
+openai = "^1.0.0"
+python-dotenv = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.6.0"
 types-requests = "^2.32.0.20250328"
 mypy = "^1.15.0"
+pytest = "^8.3.5"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.flake8]
-max-line-length = 100  # or whatever length you prefer
+max-line-length = 120  # or whatever length you prefer

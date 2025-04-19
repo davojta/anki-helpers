@@ -1,12 +1,35 @@
 """Command-line interface for Anki Helpers."""
 
 import html
+import os
 import re
 import time
+from pathlib import Path
 
 import click
+from openai import OpenAI
 
 from .anki_connect import AnkiConnect, AnkiConnectError
+from .prompts.examples_for_red_cards import get_prompt
+
+
+# Manually load .env file
+def load_dotenv():
+    """Load environment variables from a .env file.
+
+    Searches for a .env file in the current directory and loads
+    environment variables from it if found. Variables are only set
+    if they don't already exist in the environment.
+    """
+    env_path = Path(".") / ".env"
+    if env_path.exists():
+        with open(env_path) as f:
+            for line in f:
+                if line.strip() and not line.startswith("#"):
+                    key, value = line.strip().split("=", 1)
+                    # Only set environment variable if it doesn't already exist
+                    if key.strip() not in os.environ:
+                        os.environ[key.strip()] = value.strip().strip("\"'")
 
 
 def clean_html_content(content: str) -> str:
@@ -45,7 +68,8 @@ def cli():
 @cli.command()
 def version():
     """Show the version of Anki Helpers."""
-    from anki_helpers import __version__
+    # Hardcoded version to avoid importing from anki_helpers
+    __version__ = "0.1.0"
 
     click.echo(f"Anki Helpers version {__version__}")
 
@@ -132,6 +156,108 @@ def list_red_flags(limit):
         click.echo(f"Error: {str(e)}", err=True)
         msg = "Make sure Anki is running with AnkiConnect plugin installed."
         click.echo(msg, err=True)
+
+
+@cli.command()
+@click.argument("output-dir", type=click.Path(file_okay=False, dir_okay=True))
+@click.option(
+    "--limit", default=None, type=int, help="Limit the number of words to process"
+)
+def get_examples_for_red_flags_cards(output_dir, limit):
+    """Generate example sentences for red flag cards.
+
+    This command:
+    1. Queries cards with red flags
+    2. Creates a markdown file with the content of these cards
+    3. Calls OpenAI API to generate example sentences
+    4. Outputs the response to console and file
+
+    Args:
+        output_dir: Directory where output files will be saved
+        limit: Maximum number of words to process (default: all words)
+    """
+    try:
+        # Load API key from .env file
+        load_dotenv()
+        api_key = os.getenv("API_KEY")
+
+        if not api_key:
+            click.echo("Error: API_KEY not found in .env file", err=True)
+            return
+
+        # Create output directory if it doesn't exist
+        output_path = Path(output_dir)
+        output_path.mkdir(parents=True, exist_ok=True)
+
+        # Query cards with red flags
+        anki = AnkiConnect()
+        cards = anki.find_cards_with_red_flag_sorted()
+
+        if not cards:
+            click.echo("No cards with red flags found.")
+            return
+
+        # Extract words from cards
+        words = []
+        # Apply limit if specified
+        cards_to_process = cards[:limit] if limit is not None else cards
+
+        for card in cards_to_process:
+            fields = card.get("noteFields", {})
+            front_field_name = next(iter(fields.keys()), None)
+
+            if front_field_name:
+                front_content = fields[front_field_name].get("value", "")
+                # Clean the HTML content
+                front_content = clean_html_content(front_content)
+                words.append(front_content)
+
+        # Create input-words.md file
+        input_file_path = output_path / "input-words.md"
+        with open(input_file_path, "w") as f:
+            f.write("\n".join(words))
+
+        click.echo(f"Created input file with {len(words)} words at {input_file_path}")
+
+        # Prepare prompt for OpenAI
+        with open(input_file_path, "r") as f:
+            words_content = f.read()
+
+        prompt = get_prompt(words_content)
+
+        # Call OpenAI API
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant for language learning.",
+                },
+                {"role": "user", "content": prompt},
+            ],
+        )
+
+        # Get response content
+        response_content = response.choices[0].message.content
+
+        # Output to console
+        click.echo("\nOpenAI Response:")
+        click.echo(response_content)
+
+        # Save to results.md
+        results_file_path = output_path / "results.md"
+        with open(results_file_path, "w") as f:
+            f.write(response_content)
+
+        click.echo(f"\nResults saved to {results_file_path}")
+
+    except AnkiConnectError as e:
+        click.echo(f"Error: {str(e)}", err=True)
+        msg = "Make sure Anki is running with AnkiConnect plugin installed."
+        click.echo(msg, err=True)
+    except Exception as e:
+        click.echo(f"Error: {str(e)}", err=True)
 
 
 if __name__ == "__main__":

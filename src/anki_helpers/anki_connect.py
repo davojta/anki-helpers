@@ -190,6 +190,21 @@ class AnkiConnect:
         for note in notes_info:
             note["dueQuery"] = 90
 
+        query = "flag:1 prop:due<0 prop:due>-7"
+        due_note_ids = self._invoke("findNotes", query=query)
+
+        # Update dueQuery for due notes
+        for note in notes_info:
+            if note["noteId"] in due_note_ids:
+                note["dueQuery"] = -1
+        query = "flag:1 prop:due<-6"
+        due_note_ids = self._invoke("findNotes", query=query)
+
+        # Update dueQuery for due notes
+        for note in notes_info:
+            if note["noteId"] in due_note_ids:
+                note["dueQuery"] = -2
+
         # Find all due notes with flag:1 for due days 0-14
         for dueProp in range(15):  # 0 to 14
             query = f"flag:1 prop:due={dueProp}"
