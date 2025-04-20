@@ -130,20 +130,18 @@ def list_red_flags(limit):
                 due_date = "N/A"
                 dueQuery = card.get("dueQuery", 90)
 
-                if dueQuery > -1:
-                    # Calculate due date as today + interval
-                    today_timestamp = time.time()
-                    due_date_timestamp = today_timestamp + (
-                        dueQuery * 86400
-                    )  # Convert days to seconds
-                    try:
-                        due_date = time.strftime(
-                            "%Y-%m-%d", time.localtime(due_date_timestamp)
-                        )
-                    except Exception as e:
-                        # Log the error but continue processing
-                        click.echo(f"Some error with formatting: {str(e)}", err=True)
-                        due_date = "Error"
+                today_timestamp = time.time()
+                due_date_timestamp = today_timestamp + (
+                    dueQuery * 86400
+                )  # Convert days to seconds
+                try:
+                    due_date = time.strftime(
+                        "%Y-%m-%d", time.localtime(due_date_timestamp)
+                    )
+                except Exception as e:
+                    # Log the error but continue processing
+                    click.echo(f"Some error with formatting: {str(e)}", err=True)
+                    due_date = "Error"
 
                 # Display the card information
                 click.echo(f"  • {front_content}")

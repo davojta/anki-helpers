@@ -206,7 +206,7 @@ class AnkiConnect:
                 note["dueQuery"] = -2
 
         # Find all due notes with flag:1 for due days 0-14
-        for dueProp in range(15):  # 0 to 14
+        for dueProp in range(30):  # 0 to 14
             query = f"flag:1 prop:due={dueProp}"
             due_note_ids = self._invoke("findNotes", query=query)
 
