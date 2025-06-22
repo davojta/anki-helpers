@@ -223,10 +223,31 @@ def get_examples_for_red_flags_cards(output_dir, limit):
 
         prompt = get_prompt(words_content)
 
+        model = "gpt-4o"
+        # Log details about the API call
+        click.echo("Preparing OpenAI API call:")
+        click.echo(f"- Model: {model}")
+        click.echo(f"- Input words count: {len(words)}")
+        click.echo(f"- Prompt length: {len(prompt)} characters")
+        click.echo(
+            "- System message: 'You are a helpful assistant for language learning.'"
+        )
+
+        # Write prompt to a debug file
+        debug_prompt_path = output_path / "debug-prompt.txt"
+        with open(debug_prompt_path, "w") as f:
+            f.write(f"MODEL: {model}\n\n")
+            f.write(
+                "SYSTEM MESSAGE:\nYou are a helpful assistant for language learning.\n\n"
+            )
+            f.write(f"USER MESSAGE:\n{prompt}")
+        click.echo(f"- Full prompt saved to: {debug_prompt_path}")
+
         # Call OpenAI API
         client = OpenAI(api_key=api_key)
+        # create a system prompt as a variable and pass it here
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model=model,
             messages=[
                 {
                     "role": "system",
