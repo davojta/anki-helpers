@@ -11,6 +11,7 @@ from openai import OpenAI
 
 from .anki_connect import AnkiConnect, AnkiConnectError
 from .prompts.examples_for_red_cards import get_prompt
+from .prompts.examples_for_word import get_prompt as get_word_prompt
 
 
 # Manually load .env file
@@ -275,6 +276,93 @@ def get_examples_for_red_flags_cards(output_dir, limit):
         click.echo(f"Error: {str(e)}", err=True)
         msg = "Make sure Anki is running with AnkiConnect plugin installed."
         click.echo(msg, err=True)
+    except Exception as e:
+        click.echo(f"Error: {str(e)}", err=True)
+
+
+@cli.command()
+@click.argument(
+    "words-file", type=click.Path(exists=True, file_okay=True, dir_okay=False)
+)
+@click.option(
+    "--topics",
+    default="well-being,nature,artificial intelligence",
+    help="Comma-separated list of topics for example sentences",
+)
+def generate_examples_for_word(words_file, topics):
+    """Generate example sentences for words from a file.
+
+    This command:
+    1. Reads words from the specified file
+    2. Calls OpenAI API to generate examples in markdown table format
+    3. Outputs the response to console and saves to examples-table.md
+
+    Args:
+        words_file: Path to markdown file containing words in Finnish
+        topics: Comma-separated topics for example sentences
+    """
+    try:
+        # Load API key from .env file
+        load_dotenv()
+        api_key = os.getenv("API_KEY")
+
+        if not api_key:
+            click.echo("Error: API_KEY not found in .env file", err=True)
+            return
+
+        # Read words from file
+        words_path = Path(words_file)
+        with open(words_path, "r", encoding="utf-8") as f:
+            words_content = f.read()
+
+        if not words_content.strip():
+            click.echo("Error: Words file is empty", err=True)
+            return
+
+        # Parse topics
+        topics_list = [topic.strip() for topic in topics.split(",")]
+
+        # Prepare prompt for OpenAI
+        prompt = get_word_prompt(words_content, topics_list)
+
+        model = "gpt-4o"
+        # Log details about the API call
+        click.echo("Preparing OpenAI API call:")
+        click.echo(f"- Model: {model}")
+        click.echo(f"- Input file: {words_path}")
+        click.echo(f"- Topics: {', '.join(topics_list)}")
+        click.echo(f"- Prompt length: {len(prompt)} characters")
+
+        # Call OpenAI API
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a helpful assistant for language learning."
+                        " Always format your response as a proper markdown table."
+                    ),
+                },
+                {"role": "user", "content": prompt},
+            ],
+        )
+
+        # Get response content
+        response_content = response.choices[0].message.content
+
+        # Output to console
+        click.echo("\nGenerated Examples Table:")
+        click.echo(response_content)
+
+        # Save to examples-table.md in the same directory as input file
+        output_file_path = words_path.parent / "examples-table.md"
+        with open(output_file_path, "w", encoding="utf-8") as f:
+            f.write(response_content)
+
+        click.echo(f"\nResults saved to {output_file_path}")
+
     except Exception as e:
         click.echo(f"Error: {str(e)}", err=True)
 
