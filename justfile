@@ -4,32 +4,46 @@ alias t := test
 [group: 'check']
 ci: lint format-check typecheck test
 
-# run tests
+# run unit tests with coverage
 [group: 'test']
 test:
-  poetry run pytest
+  uv run pytest tests/ -v --cov=src --cov-report=term-missing
+
+# run integration tests
+[group: 'test']
+test-integration:
+  uv run pytest integration-tests/ -v
+
+# run e2e tests
+[group: 'test']
+test-e2e:
+  uv run pytest e2e-tests/ -v
+
+# run all tests (unit + integration + e2e)
+[group: 'test']
+test-all: test test-integration test-e2e
 
 # run ruff linter
 [group: 'check']
 lint:
-  poetry run ruff check .
+  uv run ruff check src/ tests/ integration-tests/ e2e-tests/
 
 # fix ruff lint issues
 [group: 'check']
 lint-fix:
-  poetry run ruff check --fix .
+  uv run ruff check --fix src/ tests/ integration-tests/ e2e-tests/
 
 # run ruff formatter
 [group: 'check']
 format:
-  poetry run ruff format .
+  uv run ruff format src/ tests/ integration-tests/ e2e-tests/
 
 # check formatting without changes
 [group: 'check']
 format-check:
-  poetry run ruff format --check .
+  uv run ruff format --check src/ tests/ integration-tests/ e2e-tests/
 
 # run pyright type checker
 [group: 'check']
 typecheck:
-  poetry run pyright
+  uv run pyright

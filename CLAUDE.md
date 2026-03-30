@@ -4,31 +4,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Python CLI tool for interacting with Anki flashcards through the AnkiConnect plugin. The project uses Poetry for dependency management and Click for the CLI interface.
+This is a Python CLI tool for interacting with Anki flashcards through the AnkiConnect plugin. The project uses uv for dependency management and Click for the CLI interface.
 
 ## Development Commands
 
 ### Setup and Installation
 ```bash
-poetry install
+uv sync
 ```
 
 ### Running Commands
 ```bash
 # Run the CLI tool
-poetry run anki-helpers --help
+uv run anki-helpers --help
 
 # List all available Anki decks
-poetry run anki-helpers list-deck
+uv run anki-helpers list-deck
 
 # List red-flagged cards (cards marked with flag:1)
-poetry run anki-helpers list-red-flags [--limit N]
+uv run anki-helpers list-red-flags [--limit N]
 
 # Generate example sentences for red-flagged cards using OpenAI
-poetry run anki-helpers get-examples-for-red-flags-cards [--limit N] OUTPUT_DIR
+uv run anki-helpers get-examples-for-red-flags-cards [--limit N] OUTPUT_DIR
 
 # Generate examples for specific words from a file
-poetry run anki-helpers generate-examples-for-word WORDS_FILE [--topics "topic1,topic2,topic3"]
+uv run anki-helpers generate-examples-for-word WORDS_FILE [--topics "topic1,topic2,topic3"]
 ```
 
 ## Code Validation
@@ -45,7 +45,10 @@ just lint-fix      # ruff auto-fix
 just format        # ruff formatter
 just format-check  # check formatting without changes
 just typecheck     # pyright type checker
-just test          # pytest
+just test          # pytest with coverage
+just test-integration # integration tests
+just test-e2e      # e2e tests (requires RUN_E2E_TESTS=1)
+just test-all      # all test tiers
 ```
 
 ## Architecture
@@ -94,6 +97,9 @@ The `get-examples-for-red-flags-cards` command creates:
 
 ### Testing Strategy
 
-- Unit tests for CLI commands in `tests/cli_test.py`
-- Basic version and functionality testing
-- No integration tests with actual Anki instance (requires manual testing)
+Three-tier testing:
+- **Unit tests** (`tests/`): Individual functions and classes, mocked external services
+- **Integration tests** (`integration-tests/`): CLI commands via subprocess
+- **E2E tests** (`e2e-tests/`): Full CLI workflows, guarded by `RUN_E2E_TESTS=1` env var
+
+Fixtures available in `tests/conftest.py`: `mock_anki_connect`, `mock_openai`

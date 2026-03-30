@@ -14,36 +14,15 @@ repos:
     -   id: debug-statements
     -   id: detect-private-key
     -   id: mixed-line-ending
-    -   id: name-tests-test
     -   id: requirements-txt-fixer
     -   id: sort-simple-yaml
 
--   repo: https://github.com/psf/black
-    rev: 24.2.0
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.2
     hooks:
-    -   id: black
-        language_version: python3
-
--   repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-    -   id: isort
-        args: ["--profile", "black"]
-
--   repo: https://github.com/pycqa/flake8
-    rev: 7.0.0
-    hooks:
-    -   id: flake8
-        additional_dependencies: [flake8-docstrings]
-        args: [ --max-line-length=120 ]
-
-
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
-    hooks:
-    -   id: mypy
-        additional_dependencies: [ "types-requests==2.32.0.20250328" ]
-
+    -   id: ruff
+        args: [--fix]
+    -   id: ruff-format
 
 -   repo: https://github.com/compilerla/conventional-pre-commit
     rev: v3.0.0

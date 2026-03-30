@@ -1,6 +1,6 @@
 """AnkiConnect API client for Anki Helpers."""
 
-from typing import Any, Dict, List
+from typing import Any
 
 import requests
 
@@ -46,14 +46,14 @@ class AnkiConnect:
 
             if result.get("error"):
                 msg = f"AnkiConnect error: {result['error']}"
-                raise AnkiConnectError(msg)
+                raise AnkiConnectError(msg) from None
 
             return result.get("result")
         except requests.RequestException as e:
             msg = f"Failed to connect to AnkiConnect: {str(e)}"
-            raise AnkiConnectError(msg)
+            raise AnkiConnectError(msg) from e
 
-    def get_deck_names(self) -> List[str]:
+    def get_deck_names(self) -> list[str]:
         """Get a list of all deck names.
 
         Returns:
@@ -61,7 +61,7 @@ class AnkiConnect:
         """
         return self._invoke("deckNames")
 
-    def find_notes_with_red_flag(self) -> List[Dict[str, Any]]:
+    def find_notes_with_red_flag(self) -> list[dict[str, Any]]:
         """Find all notes that have a red flag.
 
         In Anki, red flags are typically marked with the tag 'marked'.
@@ -78,9 +78,7 @@ class AnkiConnect:
             return []
 
         # Find all card IDs for these notes
-        card_ids = self._invoke(
-            "findCards", query=f"nid:{','.join(map(str, note_ids))}"
-        )
+        card_ids = self._invoke("findCards", query=f"nid:{','.join(map(str, note_ids))}")
 
         if not card_ids:
             return []
@@ -90,7 +88,7 @@ class AnkiConnect:
 
         return notes_info
 
-    def get_intervals(self, card_ids: List[int]) -> Dict[int, int]:
+    def get_intervals(self, card_ids: list[int]) -> dict[int, int]:
         """Get intervals for the specified cards.
 
         Args:
@@ -105,9 +103,9 @@ class AnkiConnect:
         intervals = self._invoke("getIntervals", cards=card_ids)
 
         # Create a dictionary mapping card IDs to their intervals
-        return {card_id: interval for card_id, interval in zip(card_ids, intervals)}
+        return {card_id: interval for card_id, interval in zip(card_ids, intervals, strict=False)}
 
-    def find_cards_with_red_flag(self) -> List[Dict[str, Any]]:
+    def find_cards_with_red_flag(self) -> list[dict[str, Any]]:
         """Find all cards that have a red flag and include due date information.
 
         Returns:
@@ -121,9 +119,7 @@ class AnkiConnect:
             return []
 
         # Find all card IDs for these notes
-        card_ids = self._invoke(
-            "findCards", query=f"nid:{','.join(map(str, note_ids))}"
-        )
+        card_ids = self._invoke("findCards", query=f"nid:{','.join(map(str, note_ids))}")
 
         if not card_ids:
             return []
@@ -152,7 +148,7 @@ class AnkiConnect:
 
         return cards_info
 
-    def find_cards_with_red_flag_sorted(self) -> List[Dict[str, Any]]:
+    def find_cards_with_red_flag_sorted(self) -> list[dict[str, Any]]:
         """Find all cards that have a red flag and include due date information with sorting.
 
         Returns:
@@ -167,9 +163,7 @@ class AnkiConnect:
             return []
 
         # Find all card IDs for these notes
-        card_ids = self._invoke(
-            "findCards", query=f"nid:{','.join(map(str, note_ids))}"
-        )
+        card_ids = self._invoke("findCards", query=f"nid:{','.join(map(str, note_ids))}")
 
         if not card_ids:
             return []

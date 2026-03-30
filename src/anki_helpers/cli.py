@@ -132,13 +132,9 @@ def list_red_flags(limit):
                 dueQuery = card.get("dueQuery", 90)
 
                 today_timestamp = time.time()
-                due_date_timestamp = today_timestamp + (
-                    dueQuery * 86400
-                )  # Convert days to seconds
+                due_date_timestamp = today_timestamp + (dueQuery * 86400)  # Convert days to seconds
                 try:
-                    due_date = time.strftime(
-                        "%Y-%m-%d", time.localtime(due_date_timestamp)
-                    )
+                    due_date = time.strftime("%Y-%m-%d", time.localtime(due_date_timestamp))
                 except Exception as e:
                     # Log the error but continue processing
                     click.echo(f"Some error with formatting: {str(e)}", err=True)
@@ -159,9 +155,7 @@ def list_red_flags(limit):
 
 @cli.command()
 @click.argument("output-dir", type=click.Path(file_okay=False, dir_okay=True))
-@click.option(
-    "--limit", default=None, type=int, help="Limit the number of words to process"
-)
+@click.option("--limit", default=None, type=int, help="Limit the number of words to process")
 def get_examples_for_red_flags_cards(output_dir, limit):
     """Generate example sentences for red flag cards.
 
@@ -219,7 +213,7 @@ def get_examples_for_red_flags_cards(output_dir, limit):
         click.echo(f"Created input file with {len(words)} words at {input_file_path}")
 
         # Prepare prompt for OpenAI
-        with open(input_file_path, "r") as f:
+        with open(input_file_path) as f:
             words_content = f.read()
 
         prompt = get_prompt(words_content)
@@ -230,17 +224,13 @@ def get_examples_for_red_flags_cards(output_dir, limit):
         click.echo(f"- Model: {model}")
         click.echo(f"- Input words count: {len(words)}")
         click.echo(f"- Prompt length: {len(prompt)} characters")
-        click.echo(
-            "- System message: 'You are a helpful assistant for language learning.'"
-        )
+        click.echo("- System message: 'You are a helpful assistant for language learning.'")
 
         # Write prompt to a debug file
         debug_prompt_path = output_path / "debug-prompt.txt"
         with open(debug_prompt_path, "w") as f:
             f.write(f"MODEL: {model}\n\n")
-            f.write(
-                "SYSTEM MESSAGE:\nYou are a helpful assistant for language learning.\n\n"
-            )
+            f.write("SYSTEM MESSAGE:\nYou are a helpful assistant for language learning.\n\n")
             f.write(f"USER MESSAGE:\n{prompt}")
         click.echo(f"- Full prompt saved to: {debug_prompt_path}")
 
@@ -285,9 +275,7 @@ def get_examples_for_red_flags_cards(output_dir, limit):
 
 
 @cli.command()
-@click.argument(
-    "words-file", type=click.Path(exists=True, file_okay=True, dir_okay=False)
-)
+@click.argument("words-file", type=click.Path(exists=True, file_okay=True, dir_okay=False))
 @click.option(
     "--topics",
     default="well-being,nature,artificial intelligence",
@@ -316,7 +304,7 @@ def generate_examples_for_word(words_file, topics):
 
         # Read words from file
         words_path = Path(words_file)
-        with open(words_path, "r", encoding="utf-8") as f:
+        with open(words_path, encoding="utf-8") as f:
             words_content = f.read()
 
         if not words_content.strip():
