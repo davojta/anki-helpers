@@ -31,28 +31,21 @@ poetry run anki-helpers get-examples-for-red-flags-cards [--limit N] OUTPUT_DIR
 poetry run anki-helpers generate-examples-for-word WORDS_FILE [--topics "topic1,topic2,topic3"]
 ```
 
-### Testing
+## Code Validation
+
+Run these before considering any task complete:
+
 ```bash
-# Run all tests using unittest
-poetry run python -m unittest discover tests
+# Run all checks (lint + format check + typecheck + test)
+just ci
 
-# Run specific test file
-poetry run python -m unittest tests/cli_test.py
-
-# Run specific test function
-poetry run python -m unittest tests.cli_test.test_version
-
-# Alternative: using pytest (if installed)
-poetry run pytest
-```
-
-### Linting and Type Checking
-```bash
-# Type checking with mypy
-poetry run mypy src/
-
-# The project uses pre-commit hooks for code quality
-pre-commit run --all-files
+# Individual commands
+just lint          # ruff linter
+just lint-fix      # ruff auto-fix
+just format        # ruff formatter
+just format-check  # check formatting without changes
+just typecheck     # pyright type checker
+just test          # pytest
 ```
 
 ## Architecture
