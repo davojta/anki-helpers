@@ -52,7 +52,9 @@ class ChatCompletions:
         Returns:
             MockResponse object with test content
         """
-        print(f"Would call OpenAI API with model {model} and {len(messages)} messages")
+        print(
+            f"Would call OpenAI API with model {model} and {len(messages or [])} messages"
+        )
         return MockResponse(
             "This is a mock response from OpenAI API. Please install the openai package to get actual responses."
         )

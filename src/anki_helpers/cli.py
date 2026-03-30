@@ -262,6 +262,10 @@ def get_examples_for_red_flags_cards(output_dir, limit):
         response_content = response.choices[0].message.content
 
         # Output to console
+        if not response_content:
+            click.echo("Error: Empty response from OpenAI", err=True)
+            return
+
         click.echo("\nOpenAI Response:")
         click.echo(response_content)
 
@@ -353,6 +357,10 @@ def generate_examples_for_word(words_file, topics):
         response_content = response.choices[0].message.content
 
         # Output to console
+        if not response_content:
+            click.echo("Error: Empty response from OpenAI", err=True)
+            return
+
         click.echo("\nGenerated Examples Table:")
         click.echo(response_content)
 
