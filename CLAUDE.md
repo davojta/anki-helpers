@@ -31,6 +31,10 @@ uv run anki-helpers get-examples-for-red-flags-cards [--limit N] OUTPUT_DIR
 uv run anki-helpers generate-examples-for-word WORDS_FILE [--topics "topic1,topic2,topic3"]
 ```
 
+## Superpowers
+
+The [Superpowers](https://github.com/obra/superpowers) plugin is installed. Skills (brainstorming, TDD, debugging, code review, etc.) auto-load at session start via the SessionStart hook.
+
 ## Code Validation
 
 Run these before considering any task complete:

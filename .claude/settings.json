@@ -4,5 +4,8 @@
       "Bash(uv run:*)"
     ],
     "deny": []
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true
   }
 }
