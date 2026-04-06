@@ -4,26 +4,26 @@ Utils to work with anki app data
 ## Installation
 
 ```bash
-poetry install
+uv sync
 ```
 
 ## Usage
 
 ### List all decks
 ```bash
-poetry run anki-helpers list-deck
+uv run anki-helpers list-deck
 ```
 
 ### List all words with red flags
 ```bash
-poetry run anki-helpers list-red-flags [--limit N]
+uv run anki-helpers list-red-flags [--limit N]
 ```
 
 This command will list notes in Anki that have been marked with a red flag (using the 'marked' tag in Anki). The notes are sorted by their due date in descending order, making it easy to see which cards need to be reviewed first. By default, only the top 5 cards are displayed, but you can change this using the `--limit` parameter.
 
 ### Generate example sentences for red flag cards
 ```bash
-poetry run anki-helpers get-examples-for-red-flags-cards [--limit N] OUTPUT_DIR
+uv run anki-helpers get-examples-for-red-flags-cards [--limit N] OUTPUT_DIR
 ```
 
 This command will:
@@ -40,33 +40,15 @@ By default, all red flag cards are processed, but you can limit the number of wo
 
 ## Running Tests
 
-To run the tests for this project, you can use Python's built-in unittest framework through Poetry:
-
 ```bash
-# Run all tests
-poetry run python -m unittest discover tests
+# Run all checks (lint + format check + typecheck + test)
+just ci
 
-# Run a specific test file
-poetry run python -m unittest tests/cli_test.py
-
-# Run a specific test function
-poetry run python -m unittest tests.cli_test.test_version
-```
-
-Alternatively, you can install pytest and use it to run the tests:
-
-```bash
-# Install pytest
-poetry add --dev pytest
-
-# Run all tests
-poetry run pytest
-
-# Run a specific test file
-poetry run pytest tests/cli_test.py
-
-# Run a specific test function
-poetry run pytest tests/cli_test.py::test_version
+# Individual commands
+just test              # pytest with coverage
+just test-integration  # integration tests
+just test-e2e          # e2e tests (requires RUN_E2E_TESTS=1)
+just test-all          # all test tiers
 ```
 
 ## Requirements
