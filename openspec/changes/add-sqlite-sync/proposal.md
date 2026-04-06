@@ -18,6 +18,8 @@ Additionally, storing Anki IDs locally enables modifying cached data and pushing
 ### New Capabilities
 - `sqlite-storage`: Local SQLite database schema, connection management, and CRUD operations for cached Anki data. Two tables: `notes` (full card/note data with Anki IDs for write-back) and `sync_log` (sync history with statistics).
 - `anki-sync`: Sync command and logic to pull card/note data from AnkiConnect into the local SQLite store, recording sync metadata (total cards, deck count, new card count).
+- `query-local`: CLI command to run arbitrary SQL queries against the local `.anki-cache.db` for inspection and debugging.
+- `query-anki`: CLI command to query Anki directly via AnkiConnect with `--filter` and `--sort` options, without requiring a prior sync.
 
 ### Modified Capabilities
 - _(none — existing commands gain optional `--local` flag but behavior is backward-compatible)_
@@ -26,5 +28,5 @@ Additionally, storing Anki IDs locally enables modifying cached data and pushing
 
 - **New dependency**: `sqlite3` (stdlib — no external dependency)
 - **New files**: SQLite storage module, sync command, migration/schema definition
-- **Modified files**: `cli.py` (add sync command, add `--local` flag), tests
+- **Modified files**: `cli.py` (add sync, query-local, query-anki commands; add `--local` flag), tests
 - **Storage**: SQLite database file in project directory (e.g., `.anki-cache.db`)

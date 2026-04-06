@@ -94,6 +94,34 @@ The anki-helpers CLI currently makes direct AnkiConnect API calls for every comm
 **Choice**: Add `--local` boolean flag to `list-red-flags` and `get-examples-for-red-flags-cards` that reads from SQLite instead of calling AnkiConnect.
 **Rationale**: Backward-compatible. Default behavior unchanged.
 
+### 8. `query-local` command for raw SQL inspection
+
+**Choice**: Add `query-local SQL` command that executes arbitrary SQL against `.anki-cache.db` and prints results in table format.
+**Example**: `anki-helpers query-local "SELECT COUNT(*) FROM notes;"`
+**Rationale**: Essential for manual validation and debugging. Lets developers inspect cached data without installing sqlite3 CLI. No filtering/sorting flags needed — the user writes raw SQL.
+
+### 9. `query-anki` command with filter/sort DSL
+
+**Choice**: Add `query-anki list` subcommand with `--filter` and `--sort` options that queries Anki directly via AnkiConnect.
+
+**Filter syntax**: `--filter key=value` with `:` separator for multiple filters. Supported filters:
+| Filter | Example | Anki search |
+|--------|---------|-------------|
+| `flag=red` | `--filter flag=red` | `flag:1` |
+| `flag=green` | `--filter flag=green` | `flag:3` |
+| `flag=blue` | `--filter flag=blue` | `flag:2` |
+| `flag=none` | `--filter flag=none` | `flag:0` |
+| `due_date=<Nd` | `--filter due_date=<10d` | `prop:due<10` |
+| `due_date=>Nd` | `--filter due_date=>5d` | `prop:due>5` |
+
+Multiple filters: `--filter flag=red:due_date=<10d` → combined with AND logic.
+
+**Sort options**: `--sort due` (ascending by due date), `--sort interval` (ascending by interval).
+
+**Rationale**: Provides a general-purpose query interface for Anki without requiring a prior sync. The filter DSL is simple and maps directly to Anki's search syntax. The `list` subcommand leaves room for future subcommands (e.g., `count`, `update`).
+
+**Alternatives**: Expose raw Anki search queries directly (too fragile, requires user to know Anki's search syntax).
+
 ## Risks / Trade-offs
 
 - **Deleted cards not detected**: Incremental sync fetches modified notes but doesn't detect cards deleted in Anki → acceptable for now; a `sync --full` flag can be added later to force a full reload

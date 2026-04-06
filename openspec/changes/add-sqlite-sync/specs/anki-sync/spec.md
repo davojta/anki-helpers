@@ -45,6 +45,71 @@ The `due_query` field SHALL be set to the `due` value from `cardsInfo`.
 - **THEN** the command exits with an error message indicating which API call failed
 - **THEN** no changes are made to the SQLite database (atomicity preserved)
 
+### Requirement: query-local command
+The system SHALL provide a `query-local SQL` command that executes an arbitrary SQL query against `.anki-cache.db` and prints results in table format.
+
+#### Scenario: Valid SELECT query
+- **WHEN** user runs `anki-helpers query-local "SELECT COUNT(*) FROM notes;"`
+- **THEN** the system executes the SQL against `.anki-cache.db` and prints results as a table
+
+#### Scenario: Query with no database
+- **WHEN** user runs `anki-helpers query-local "SELECT COUNT(*) FROM notes;"` and `.anki-cache.db` does not exist
+- **THEN** the system prints an error: "No local database found. Run `sync` first."
+
+#### Scenario: Invalid SQL
+- **WHEN** user runs `anki-helpers query-local "INVALID SQL"`
+- **THEN** the system prints the SQLite error message
+
+#### Scenario: Non-SELECT statement
+- **WHEN** user runs `anki-helpers query-local "DELETE FROM notes;"`
+- **THEN** the system prints an error: "Only SELECT queries are allowed."
+
+### Requirement: query-anki list command
+The system SHALL provide a `query-anki list` subcommand with `--filter` and `--sort` options that queries Anki directly via AnkiConnect (no local cache required).
+
+**Filter syntax**: `--filter key=value` with `:` separator for multiple filters. Multiple filters are combined with AND logic.
+
+Supported filter keys:
+| Key | Value format | Anki search translation |
+|-----|-------------|------------------------|
+| `flag` | `red`, `green`, `blue`, `none` | `flag:1`, `flag:3`, `flag:2`, `flag:0` |
+| `due_date` | `<Nd` or `>Nd` (N = number of days) | `prop:due<N` or `prop:due>N` |
+
+**Sort options**: `--sort FIELD` where FIELD is `due` (default) or `interval`.
+
+Output: table with columns card_id, note_id, deck, due, flag, fields summary, tags.
+
+#### Scenario: Filter by red flag, sort by due
+- **WHEN** user runs `anki-helpers query-anki list --filter flag=red --sort due`
+- **THEN** the system translates to Anki search `flag:1`
+- **THEN** results are sorted by due ascending and printed as a table
+
+#### Scenario: Filter by due date
+- **WHEN** user runs `anki-helpers query-anki list --filter due_date=<10d --sort due`
+- **THEN** the system translates to Anki search `prop:due<10`
+- **THEN** results are sorted by due ascending and printed as a table
+
+#### Scenario: Multiple filters combined
+- **WHEN** user runs `anki-helpers query-anki list --filter flag=red:due_date=<10d --sort due`
+- **THEN** the system translates to Anki search `flag:1 prop:due<10`
+- **THEN** results are sorted by due ascending and printed as a table
+
+#### Scenario: No matching cards
+- **WHEN** user runs `anki-helpers query-anki list --filter flag=blue` and no blue-flagged cards exist
+- **THEN** the system prints "No cards found."
+
+#### Scenario: Unknown filter key
+- **WHEN** user runs `anki-helpers query-anki list --filter unknown=value`
+- **THEN** the system prints an error: "Unknown filter: unknown. Supported filters: flag, due_date"
+
+#### Scenario: Invalid filter value
+- **WHEN** user runs `anki-helpers query-anki list --filter flag=purple`
+- **THEN** the system prints an error: "Invalid flag value: purple. Supported: red, green, blue, none"
+
+#### Scenario: Anki not running
+- **WHEN** user runs `anki-helpers query-anki list` and AnkiConnect is unreachable
+- **THEN** the command exits with a clear error message indicating Anki is not available
+
 ### Requirement: Local flag on list-red-flags
 The `list-red-flags` command SHALL accept a `--local` flag. When set, the command SHALL read card data from the SQLite cache instead of making live AnkiConnect calls.
 

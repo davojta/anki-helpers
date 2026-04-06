@@ -111,3 +111,14 @@ The system SHALL support retrieving a single note by its Anki card_id.
 #### Scenario: Card not found
 - **WHEN** `get_note_by_card_id(id)` is called with a non-existent card_id
 - **THEN** the system returns None
+
+### Requirement: Execute raw SQL query
+The system SHALL provide an `execute_sql(sql) -> list[dict]` method that executes a read-only SQL query against the database and returns results as a list of dictionaries. Only SELECT statements are allowed.
+
+#### Scenario: Valid SELECT query
+- **WHEN** `execute_sql("SELECT COUNT(*) as cnt FROM notes;")` is called
+- **THEN** the system returns `[{"cnt": 150}]`
+
+#### Scenario: Non-SELECT statement rejected
+- **WHEN** `execute_sql("DELETE FROM notes;")` is called
+- **THEN** the system raises a `ValueError` with message "Only SELECT queries are allowed"
