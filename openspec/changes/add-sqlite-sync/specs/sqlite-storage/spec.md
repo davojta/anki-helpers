@@ -3,7 +3,7 @@
 ### Requirement: SQLite database initialization
 The system SHALL create a SQLite database at `.anki-cache.db` with `notes` and `sync_log` tables when first accessed.
 
-The `notes` table SHALL store: `card_id` (INTEGER PK), `note_id` (INTEGER), `deck_name` (TEXT), `fields` (TEXT, JSON), `tags` (TEXT, JSON), `due` (INTEGER), `interval` (INTEGER), `flag` (INTEGER), `due_query` (INTEGER), `modified` (INTEGER — Anki note modification epoch).
+The `notes` table SHALL store: `card_id` (INTEGER PK), `note_id` (INTEGER), `deck_name` (TEXT), `fields` (TEXT, JSON), `tags` (TEXT, JSON), `due` (INTEGER — raw value from `cardsInfo`, meaning depends on `queue`), `interval` (INTEGER), `flag` (INTEGER — from `cardsInfo.flags`, 0-7), `queue` (INTEGER — card queue type: 0=new, 1=learning, 2=review, 3=relearning), `due_query` (INTEGER — converted relative days for sorting), `modified` (INTEGER — from `notesInfo.mod`, Unix epoch seconds).
 
 The `sync_log` table SHALL store: `id` (INTEGER PK AUTOINCREMENT), `synced_at` (TEXT, ISO timestamp), `synced_at_epoch` (INTEGER), `total_cards` (INTEGER), `deck_count` (INTEGER), `new_cards` (INTEGER), `updated_cards` (INTEGER).
 
@@ -57,6 +57,11 @@ The system SHALL support incremental updates via `upsert_notes(notes) -> (new_co
 - **WHEN** `upsert_notes([])` is called
 - **THEN** no changes are made to the database
 - **THEN** the method returns `(new_count=0, updated_count=0)`
+
+#### Scenario: Failed upsert preserves existing data
+- **WHEN** `upsert_notes(notes)` is called and an error occurs during the upsert
+- **THEN** the transaction is rolled back and existing data remains unchanged
+- **THEN** the method raises the underlying exception
 
 ### Requirement: Add sync log entry
 The system SHALL provide an `add_sync_log(total_cards, deck_count, new_cards, updated_cards)` method that inserts a row into `sync_log` with the current UTC timestamp as `synced_at` and the current epoch as `synced_at_epoch`.

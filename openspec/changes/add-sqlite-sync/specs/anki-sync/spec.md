@@ -6,14 +6,15 @@ The system SHALL provide a `sync` CLI command that synchronizes Anki data into t
 - **Initial sync** (no previous sync_log entry): Full load of ALL notes and cards from Anki.
 - **Incremental sync** (previous sync exists): Fetch only notes modified since the last sync.
 
-The `due_query` field SHALL be set to the `due` value from `cardsInfo`.
+The `due_query` field SHALL be computed from the raw `due` value from `cardsInfo`, converted to relative days based on queue type (see design decision #4). The `flag` field SHALL store the value from `cardsInfo.flags` (0-7). The `queue` field SHALL store the value from `cardsInfo.queue`.
 
 #### Scenario: Initial sync (no previous sync)
 - **WHEN** user runs `anki-helpers sync` and no previous sync exists in sync_log
-- **THEN** the system calls `findNotes("")` to get all note IDs
-- **THEN** the system calls `notesInfo` with all note IDs
-- **THEN** the system calls `findCards("")` to get all card IDs
-- **THEN** the system calls `cardsInfo` with all card IDs
+- **THEN** the system calls `notesInfo(query="")` to get all note data (fields, tags, mod, cards) — single call replaces `findNotes` + `notesInfo`
+- **THEN** the system collects all card IDs from `notesInfo.cards` fields
+- **THEN** the system calls `cardsInfo(cards=all_card_ids)` to get card-level data (deck, due, interval, flags, queue)
+- **THEN** the system determines `days_elapsed` by calling `findCards("prop:due=0")` and reading the raw `due` value of a returned card
+- **THEN** the system converts raw `due` to `due_query` (relative days) based on queue type
 - **THEN** the system stores all data via `replace_all(notes)`
 - **THEN** a sync log entry is created with synced_at, total_cards, deck_count, new_cards, updated_cards
 - **THEN** the command prints: timestamp, total cards, decks, new cards, updated cards
@@ -21,11 +22,12 @@ The `due_query` field SHALL be set to the `due` value from `cardsInfo`.
 #### Scenario: Incremental sync (previous sync exists)
 - **WHEN** user runs `anki-helpers sync` and a previous sync exists in sync_log
 - **THEN** the system reads `synced_at_epoch` from the most recent sync_log row
-- **THEN** the system calculates N = ceil((now - synced_at_epoch) / 86400) + 1 (safety margin in days)
-- **THEN** the system calls `findNotes("prop:mod:N")` to get recently modified note IDs
-- **THEN** the system calls `notesInfo` for those note IDs
-- **THEN** the system filters notes to only those with `mod > synced_at_epoch` (client-side precision filter)
-- **THEN** for filtered notes, the system gets card IDs and calls `cardsInfo`
+- **THEN** the system calculates N = max(1, ceil((now - synced_at_epoch) / 86400) + 1) (safety margin in days)
+- **THEN** the system calls `findNotes("edited:N")` to get recently modified note IDs (note: `prop:mod` does not exist as a search operator)
+- **THEN** the system calls `notesInfo(notes=note_ids)` for those note IDs
+- **THEN** the system filters notes to only those with `mod > synced_at_epoch` (client-side precision filter, since `edited:N` uses scheduler day boundary, not exact epoch)
+- **THEN** for filtered notes, the system collects card IDs from `notesInfo.cards` fields and calls `cardsInfo`
+- **THEN** the system determines `days_elapsed` and converts `due_query`
 - **THEN** the system stores data via `upsert_notes(notes)`
 - **THEN** a sync log entry is created
 - **THEN** the command prints: timestamp, cards processed, new cards, updated cards
@@ -72,7 +74,7 @@ The system SHALL provide a `query-anki list` subcommand with `--filter` and `--s
 Supported filter keys:
 | Key | Value format | Anki search translation |
 |-----|-------------|------------------------|
-| `flag` | `red`, `green`, `blue`, `none` | `flag:1`, `flag:3`, `flag:2`, `flag:0` |
+| `flag` | `none`, `red`, `orange`, `green`, `blue`, `pink`, `turquoise`, `purple` | `flag:0` through `flag:7` |
 | `due_date` | `<Nd` or `>Nd` (N = number of days) | `prop:due<N` or `prop:due>N` |
 
 **Sort options**: `--sort FIELD` where FIELD is `due` (default) or `interval`.
@@ -103,8 +105,8 @@ Output: table with columns card_id, note_id, deck, due, flag, fields summary, ta
 - **THEN** the system prints an error: "Unknown filter: unknown. Supported filters: flag, due_date"
 
 #### Scenario: Invalid filter value
-- **WHEN** user runs `anki-helpers query-anki list --filter flag=purple`
-- **THEN** the system prints an error: "Invalid flag value: purple. Supported: red, green, blue, none"
+- **WHEN** user runs `anki-helpers query-anki list --filter flag=yellow`
+- **THEN** the system prints an error: "Invalid flag value: yellow. Supported: none, red, orange, green, blue, pink, turquoise, purple"
 
 #### Scenario: Anki not running
 - **WHEN** user runs `anki-helpers query-anki list` and AnkiConnect is unreachable
