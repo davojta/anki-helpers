@@ -13,7 +13,7 @@ authors = [
     { name = "davojta" },
 ]
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 dependencies = [
     "click>=8.1.8",
     "requests>=2.31.0",
@@ -37,7 +37,7 @@ dev = [
 ]
 
 [tool.ruff]
-target-version = "py312"
+target-version = "py314"
 line-length = 100
 
 [tool.ruff.lint]
