@@ -148,6 +148,78 @@ class AnkiConnect:
 
         return cards_info
 
+    def get_all_notes_info(self) -> list[dict[str, Any]]:
+        """Get info for all notes in the collection.
+
+        Returns:
+            List of note info dicts with fields, tags, mod, cards list.
+        """
+        return self._invoke("notesInfo", query="")
+
+    def get_cards_info(self, card_ids: list[int]) -> list[dict[str, Any]]:
+        """Get info for specific cards.
+
+        Args:
+            card_ids: List of card IDs.
+
+        Returns:
+            List of card info dicts with deck, due, interval, flags, queue.
+        """
+        if not card_ids:
+            return []
+        return self._invoke("cardsInfo", cards=card_ids)
+
+    def find_edited_notes(self, days: int) -> list[int]:
+        """Find notes edited within the last N days.
+
+        Args:
+            days: Number of days to look back.
+
+        Returns:
+            List of note IDs.
+        """
+        return self._invoke("findNotes", query=f"edited:{days}")
+
+    def find_notes_info(self, note_ids: list[int]) -> list[dict[str, Any]]:
+        """Get info for specific notes by their IDs.
+
+        Args:
+            note_ids: List of note IDs.
+
+        Returns:
+            List of note info dicts.
+        """
+        if not note_ids:
+            return []
+        return self._invoke("notesInfo", notes=note_ids)
+
+    def find_cards(self, query: str) -> list[int]:
+        """Find card IDs matching a search query.
+
+        Args:
+            query: Anki search query string.
+
+        Returns:
+            List of card IDs.
+        """
+        return self._invoke("findCards", query=query)
+
+    def get_days_elapsed(self) -> int:
+        """Determine days elapsed since Anki collection creation.
+
+        Uses findCards("prop:due=0") and reads raw due from a returned card.
+
+        Returns:
+            The days_elapsed value from Anki.
+        """
+        card_ids = self._invoke("findCards", query="prop:due=0")
+        if not card_ids:
+            return 0
+        cards_info = self._invoke("cardsInfo", cards=[card_ids[0]])
+        if cards_info:
+            return cards_info[0].get("due", 0)
+        return 0
+
     def find_cards_with_red_flag_sorted(self) -> list[dict[str, Any]]:
         """Find all cards that have a red flag and include due date information with sorting.
 
