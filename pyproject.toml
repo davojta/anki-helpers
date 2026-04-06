@@ -33,6 +33,7 @@ dev = [
     "pytest-cov>=4.0.0",
     "pytest-mock>=3.10.0",
     "types-requests>=2.32.0",
+    "responses>=0.26.0",
 ]
 
 [tool.ruff]
