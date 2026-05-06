@@ -69,6 +69,19 @@ poetry run pytest tests/cli_test.py
 poetry run pytest tests/cli_test.py::test_version
 ```
 
+### Run the AnkiConnect mock server
+
+For local development and CI runs without a real Anki instance:
+
+```bash
+poetry run anki-helpers mock-server --seed fixtures/sample_seed.json
+# server listens on http://127.0.0.1:8765, drop-in for AnkiConnect
+```
+
+Run-time options: `--host`, `--port`, `--db PATH` (defaults to `:memory:`),
+`--seed PATH` (load decks/notes from a JSON file), `--reload`. The server
+also exposes `POST /admin/reset` and `POST /admin/seed` for tests.
+
 ## Requirements
-- Anki must be running
+- Anki must be running (or use the bundled mock server above)
 - AnkiConnect plugin must be installed in Anki

@@ -10,6 +10,7 @@ import click
 from openai import OpenAI
 
 from .anki_connect import AnkiConnect, AnkiConnectError
+from .mock_server.server import run_server as run_mock_server
 from .prompts.examples_for_red_cards import get_prompt
 
 
@@ -277,6 +278,38 @@ def get_examples_for_red_flags_cards(output_dir, limit):
         click.echo(msg, err=True)
     except Exception as e:
         click.echo(f"Error: {str(e)}", err=True)
+
+
+@cli.command("mock-server")
+@click.option("--host", default="127.0.0.1", show_default=True, help="Bind host")
+@click.option("--port", default=8765, show_default=True, type=int, help="Bind port")
+@click.option(
+    "--db",
+    default=":memory:",
+    show_default=True,
+    help="SQLite database path (':memory:' for ephemeral state)",
+)
+@click.option(
+    "--seed",
+    default=None,
+    type=click.Path(dir_okay=False, exists=True),
+    help="JSON seed file loaded on startup",
+)
+@click.option("--reload", is_flag=True, help="Enable uvicorn auto-reload (dev only)")
+@click.option(
+    "--log-level", default="info", show_default=True, help="uvicorn log level"
+)
+def mock_server(host, port, db, seed, reload, log_level):
+    """Run a local AnkiConnect-compatible mock server."""
+    click.echo(f"Starting AnkiConnect mock on http://{host}:{port} (db={db})")
+    run_mock_server(
+        host=host,
+        port=port,
+        db_path=db,
+        seed_file=seed,
+        reload=reload,
+        log_level=log_level,
+    )
 
 
 if __name__ == "__main__":

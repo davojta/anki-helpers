@@ -14,12 +14,15 @@ click = "^8.1.8"
 requests = "^2.31.0"
 openai = "^1.0.0"
 python-dotenv = "^1.0.0"
+fastapi = "^0.115.0"
+uvicorn = "^0.30.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.6.0"
 types-requests = "^2.32.0.20250328"
 mypy = "^1.15.0"
 pytest = "^8.3.5"
+httpx = "^0.27.0"
 
 [build-system]
 requires = ["poetry-core"]

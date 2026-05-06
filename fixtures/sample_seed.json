@@ -1,0 +1,34 @@
+{
+  "decks": ["Finnish::Vocabulary"],
+  "models": [],
+  "notes": [
+    {
+      "deckName": "Finnish::Vocabulary",
+      "modelName": "Basic",
+      "fields": {"Front": "kissa", "Back": "cat"},
+      "tags": ["animal", "marked"],
+      "cards": [{"flags": 1, "due": -3, "ivl": 14, "reps": 5}]
+    },
+    {
+      "deckName": "Finnish::Vocabulary",
+      "modelName": "Basic",
+      "fields": {"Front": "koira", "Back": "dog"},
+      "tags": ["animal", "marked"],
+      "cards": [{"flags": 1, "due": 0, "ivl": 7, "reps": 3}]
+    },
+    {
+      "deckName": "Finnish::Vocabulary",
+      "modelName": "Basic",
+      "fields": {"Front": "talo", "Back": "house"},
+      "tags": ["noun"],
+      "cards": [{"flags": 0, "due": 21, "ivl": 21, "reps": 8}]
+    },
+    {
+      "deckName": "Default",
+      "modelName": "Basic",
+      "fields": {"Front": "hello", "Back": "world"},
+      "tags": [],
+      "cards": [{"flags": 0, "due": 0, "ivl": 0, "reps": 0}]
+    }
+  ]
+}
