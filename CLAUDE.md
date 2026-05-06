@@ -19,14 +19,19 @@ poetry run anki-helpers --help
 poetry run anki-helpers list-deck
 poetry run anki-helpers list-red-flags [--limit N]
 poetry run anki-helpers get-examples-for-red-flags-cards [--limit N] OUTPUT_DIR
+
+# Run a local AnkiConnect-compatible mock server (no real Anki needed)
+poetry run anki-helpers mock-server [--port 8765] [--seed fixtures/sample_seed.json]
 ```
 
 ## Architecture
 
 - `src/anki_helpers/cli.py` — CLI entry point; all Click commands live here
 - `src/anki_helpers/anki_connect.py` — AnkiConnect HTTP API wrapper
+- `src/anki_helpers/mock_server/` — FastAPI-based stateful mock for AnkiConnect
 - `src/anki_helpers/prompts/` — Prompt templates for OpenAI calls
 - `tests/cli_test.py` — Tests using Click's `CliRunner`; AnkiConnect and OpenAI are mocked
+- `tests/mock_server_test.py` — Tests for the mock server using FastAPI's `TestClient`
 
 ## Code Quality
 
