@@ -7,7 +7,7 @@ For the human. Run each step and tick it. If a result does not match, stop and r
 ## Setup
 
 ```bash
-poetry install
+uv sync
 ```
 
 ## HITL-1: <what to check>
@@ -31,8 +31,8 @@ Expected: <what you should see>.
 ## Final
 
 ```bash
-poetry run pytest
-poetry run pre-commit run --all-files
+uv run pytest
+uv run pre-commit run --all-files
 ```
 
 Expected: all green.

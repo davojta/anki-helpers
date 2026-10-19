@@ -25,7 +25,7 @@ Format: `- [ ] T<NNN> [<agent>] [P?] <what>`: `<files>`
 ## Phase 4: Tests and polish
 
 - [ ] T006 [mid-dev] [P] Tests T1–T3 from design.md: `tests/...`
-- [ ] T007 [low-dev] Run `poetry run pytest` and `poetry run pre-commit run --all-files`, report failures
+- [ ] T007 [low-dev] Run `uv run pytest` and `uv run pre-commit run --all-files`, report failures
 - [ ] T008 [low-dev] [P] Update docs: `<files>`
 
 ## Dependencies
