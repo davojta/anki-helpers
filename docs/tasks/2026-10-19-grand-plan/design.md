@@ -1,6 +1,6 @@
 # anki-helpers modernization: staged plan for Claude Code (issue → PR software factory)
 
-**Bottom line:** Rebuild anki-helpers as a uv/ruff/mypy/pytest/Typer project. The first piece to build is an in-process **fake AnkiConnect**: a stateful v6 emulator that also runs as an HTTP server. Next comes a **one-note-per-file Markdown + YAML front-matter model** with three-way hash/mod-time sync. Everything else plugs into those two pieces: the MCP server, LLM generation, the web UI, the docs, and the LLM wiki. The plan has 8 stages (S0–S7) and roughly 50 small `agent` issues.
+**Bottom line:** Rebuild anki-helpers as a uv/ruff/pyright/pytest/Typer project. The first piece to build is an in-process **fake AnkiConnect**: a stateful v6 emulator that also runs as an HTTP server. Next comes a **one-note-per-file Markdown + YAML front-matter model** with three-way hash/mod-time sync. Everything else plugs into those two pieces: the MCP server, LLM generation, the web UI, the docs, and the LLM wiki. The plan has 8 stages (S0–S7) and roughly 50 small `agent` issues.
 
 ## TL;DR
 - **Order:** S0 bootstrap (tooling, CI, CLAUDE.md, SPEC.md, llm-wiki skeleton) → S1 AnkiConnect client + fake/mock server, S2 Markdown data model (these two run in parallel) → S3 bidirectional sync → S4 docs site → S5 MCP server → S6 LLM card generation → S7 web UI + Obsidian vault sync + homelab deploy.
@@ -38,16 +38,16 @@
 
 | Concern | Choice | Why / alternative |
 |---|---|---|
-| Python | 3.12 only (CI), `requires-python >=3.12` | Keeps the CI matrix minimal. |
+| Python | 3.14 only (CI), `requires-python >=3.14` | Keeps the CI matrix minimal. |
 | Env/packaging | **uv** + `pyproject.toml` (PEP 621), `uv.lock`, hatchling backend | Fast, one tool for venv, lock, and run. Replaces Poetry. |
 | Lint/format | **ruff** (`check` + `format`) | Replaces flake8/black/isort. |
-| Types | **mypy --strict** on `src/` | Pyright is the alternative; pick one. *Open decision D1.* |
+| Types | **pyright** (strict) on `src/` | Chosen over mypy --strict in [ADR-0001](../../adr/0001-stack.md) (D1). |
 | Tests | **pytest**, pytest-cov, pytest-httpx or an `httpx.MockTransport` fixture, hypothesis (for the parser round-trip) | Replaces unittest. |
 | CLI | **Typer** (Click underneath) + Rich | Typed signatures, matches pydantic models. |
 | HTTP | **httpx** (sync + async) | One client for CLI, MCP, and web. |
 | Models | **pydantic v2** | Front matter schema, AnkiConnect payloads, LLM structured output. |
 | Markdown | `python-frontmatter`/`ruamel.yaml` (round-trip-safe), `markdown-it-py` (MD→HTML), `markdownify` (HTML→MD on pull) | |
-| Hooks | pre-commit: ruff, ruff-format, mypy, markdownlint, end-of-file/trailing-ws | Keep the existing markdownlint config. |
+| Hooks | pre-commit: ruff, ruff-format, pyright, end-of-file/trailing-ws | No markdownlint for now. |
 | Scaffolding | **copier** (if a template is used) | Supports `copier update`, which cookiecutter does not. |
 | Task runner | `Makefile` with `make check` = lint + type + test | Gives the agent one command to run. |
 
@@ -297,7 +297,7 @@ The second check filters out mod bumps with no content change, and avoids false 
 7. AnkiConnect contract (action subset, version, error mapping).
 8. LLM generation (provider protocol, prompt versioning, validation rules, regeneration semantics).
 9. Interfaces (CLI command tree; MCP tools/resources; HTTP routes).
-10. Non-functional (Python 3.12, offline tests, coverage ≥85%, no network in unit tests, secrets via env).
+10. Non-functional (Python 3.14, offline tests, coverage ≥85%, no network in unit tests, secrets via env).
 11. Deployment (desktop, homelab compose).
 12. Open decisions (D1–D8) and assumptions (A1–A9).
 
@@ -307,14 +307,14 @@ The second check filters out mod bumps with no content change, and avoids false 
 # anki-helpers — agent guide
 ## Commands
 - Setup: `uv sync --all-extras --dev`
-- All checks (run before every commit): `make check`  # ruff check, ruff format --check, mypy src, pytest -m "not real_anki", wiki_lint
+- All checks (run before every commit): `make check`  # ruff check, ruff format --check, pyright, pytest -m "not real_anki", wiki_lint
 - Single test: `uv run pytest tests/unit/test_x.py::test_y -q`
 - Fake Anki: `uv run anki-helpers mock serve --port 8765 --seed tests/fixtures/anki_states/basic.json`
 - Docs: `uv run zensical serve`
 ## Source of truth
 - Read SPEC.md and docs/llm-wiki/wiki/index.md before designing. SPEC wins over code; flag conflicts in the PR.
 ## Conventions
-- src layout, package `anki_helpers`; typed (mypy --strict); pydantic v2 models at boundaries.
+- src layout, package `anki_helpers`; typed (pyright strict); pydantic v2 models at boundaries.
 - All Anki access goes through `AnkiPort`. Never call httpx to AnkiConnect outside `ankiconnect/`.
 - Tests never touch a real Anki or network. Use the `fake_anki` fixtures / `FakeProvider`.
 - Real-Anki tests: marker `real_anki`, only in tests/contract/.
@@ -351,7 +351,7 @@ jobs:
       - run: uv sync --locked --all-extras --dev
       - run: uv run ruff check .
       - run: uv run ruff format --check .
-      - run: uv run mypy src
+      - run: uv run pyright
       - run: uv run pytest -m "not real_anki" --cov=anki_helpers --cov-fail-under=85   # unit + e2e against fake
       - run: uv run python scripts/wiki_lint.py
       - run: uv run zensical build   # or: mkdocs build --strict
@@ -408,7 +408,7 @@ Issue format: **ID · title** — *AC* (acceptance criteria). All issues get the
 - **Issues:**
   - S0-01 · Inventory current repo — *AC: `docs/llm-wiki/raw/legacy-inventory.md` lists modules, deps, AnkiConnect calls, open PRs with recommendation (merge/close/port).* (human-reviewed)
   - S0-02 · Migrate Poetry→uv + hatchling, src layout `anki_helpers` — *AC: `uv sync --locked` works; entrypoint `anki-helpers`; poetry files removed.*
-  - S0-03 · Add ruff, mypy --strict, pre-commit, Makefile `check` — *AC: `make check` passes; pre-commit runs same hooks.*
+  - S0-03 · Add ruff, pyright (strict), pre-commit, Makefile `check` — *AC: `make check` passes; pre-commit runs same hooks.*
   - S0-04 · Port unittest→pytest; CLI on Typer preserving `list-deck`, `list-red-flags`, `get-examples-for-red-flags-cards` signatures — *AC: existing behaviors covered by CliRunner tests (Anki calls mocked).*
   - S0-05 · Add ci.yml + claude.yml + issue template + labels (`agent`, `needs-decision`, `stage:*`) — *AC: CI required on PR; a labelled dummy issue yields a PR.*
   - S0-06 · CLAUDE.md + SPEC.md v0 (outline §5) + ADR-0001 — *AC: files present; wiki_lint stub passes.*
@@ -495,7 +495,7 @@ Issue format: **ID · title** — *AC* (acceptance criteria). All issues get the
 **Dependency order:** S0 → {S1 ∥ S2} → S3 → {S4 (continuous), S5} → S6 → S7. S4 issues can start after S0 and be refreshed after each stage. S6-01..S6-05 depend only on S2 and can start early.
 
 ## 9. Assumptions (explicit)
-- A1 Python 3.12, Linux CI only.
+- A1 Python 3.14, Linux CI only.
 - A2 One file = one note; directory = deck.
 - A3 Conflict default = no-overwrite + conflict file.
 - A4 Deletion default = tag + suspend.
@@ -506,7 +506,7 @@ Issue format: **ID · title** — *AC* (acceptance criteria). All issues get the
 - A9 The homelab runs Docker and has Tailscale or SSO in front.
 
 ## 10. Open decisions
-- D1 mypy vs pyright.
+- D1 mypy vs pyright. Decided: pyright ([ADR-0001](../../adr/0001-stack.md)).
 - D2 AnkiConnect v6 only vs adding the new JSON-RPC v1 adapter (verify upstream).
 - D3 Conflict policy default (A3) vs LWW.
 - D4 Standalone FastMCP vs official `mcp` SDK `MCPServer`.
