@@ -1,0 +1,3 @@
+# task-ledger root for anki-helpers. Use: export LEDGER_ROOT=$PWD/docs/tasks
+# Flat layout: tasks live at docs/tasks/<slug>/task.md
+project = "anki-helpers"
