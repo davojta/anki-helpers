@@ -247,3 +247,43 @@ def test_dump_load_round_trip(anki: FakeAnki) -> None:
     call(anki, "addNote", note=basic("nuevo"))
     dumped = dump_state(anki.state)
     assert dump_state(load_state(dumped)) == dumped
+
+
+def test_dump_keeps_orphaned_cards(anki: FakeAnki) -> None:
+    """Cards kept after a field edit survive dump → load with their ords."""
+    call(anki, "updateNoteFields", note={"id": 1004, "fields": {"Back": ""}})
+    dumped = dump_state(anki.state)
+    reloaded = load_state(dumped)
+    assert [(c.id, c.ord) for c in reloaded.cards_of(1004)] == [(2004, 0), (2005, 1)]
+    assert dump_state(reloaded) == dumped
+
+
+def test_delete_decks_keeps_cards_elsewhere(anki: FakeAnki) -> None:
+    """Only cards in the deleted deck go; the note stays while it has cards."""
+    call(anki, "changeDeck", cards=[2005], deck="Other")
+    call(anki, "deleteDecks", decks=["German"], cardsToo=True)
+    assert "German::Vocab" not in call(anki, "deckNames")
+    assert call(anki, "findCards", query="nid:1004") == [2005]
+    assert call(anki, "notesInfo", notes=[1001]) == [{}]
+
+
+def test_bad_version_is_an_error_envelope(anki: FakeAnki) -> None:
+    """A non-numeric version yields an error reply, not an exception."""
+    reply = anki.handle({"action": "version", "version": "6a"})
+    assert reply["result"] is None
+    assert "6a" in reply["error"]
+
+
+def test_fault_times_zero_never_fires(anki: FakeAnki) -> None:
+    """times=0 means the fault is already used up."""
+    anki.faults.append(Fault(action="*", error="x", times=0))
+    assert call(anki, "version") == 6
+    assert anki.faults == []
+
+
+def test_add_notes_keeps_successes(anki: FakeAnki) -> None:
+    """Like AnkiConnect, a partial failure raises but keeps added notes."""
+    assert "duplicate" in error(
+        anki, "addNotes", notes=[basic("dos"), basic("el perro")]
+    )
+    assert call(anki, "findNotes", query="front:dos")

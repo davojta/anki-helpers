@@ -172,7 +172,7 @@ def load_state(data: dict[str, Any], clock: Clock = system_clock) -> State:
     """Build a state from a seed dict (see ``fixtures/basic.json``).
 
     Notes need ``deck``, ``model`` and ``fields``; ``id``, ``tags``, ``mod``
-    and per-card overrides (``cards``: list indexed by card position) are
+    and per-card overrides (``cards``) are
     optional. Cards not listed get defaults (new, unflagged).
     """
     state = State(clock=clock, today=int(data.get("today", DEFAULT_TODAY)))
@@ -208,8 +208,17 @@ def load_state(data: dict[str, Any], clock: Clock = system_clock) -> State:
         state.notes[note.id] = note
         state.ensure_deck(raw["deck"])
         overrides = cast("list[dict[str, Any]]", raw.get("cards", []))
-        for pos, ord_ in enumerate(state.card_ords(note)):
-            extra = overrides[pos] if pos < len(overrides) else {}
+        # Overrides with "ord" (as dumped) pin the exact cards, so cards kept
+        # after a field edit survive a round trip; else they go by position.
+        if overrides and all("ord" in o for o in overrides):
+            pairs = [(int(o["ord"]), o) for o in overrides]
+        else:
+            ords = state.card_ords(note)
+            pairs = [
+                (ord_, overrides[pos] if pos < len(overrides) else {})
+                for pos, ord_ in enumerate(ords)
+            ]
+        for ord_, extra in pairs:
             card = Card(
                 id=int(extra.get("id") or state.new_id()),
                 note_id=note.id,
@@ -267,6 +276,7 @@ def dump_state(state: State) -> dict[str, Any]:
                 "cards": [
                     {
                         "id": c.id,
+                        "ord": c.ord,
                         "deck": c.deck,
                         "mod": c.mod,
                         "type": c.type,

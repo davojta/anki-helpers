@@ -42,3 +42,17 @@ def test_query_unsupported() -> None:
     result = CliRunner().invoke(cli, ["mock", "query", "added:1"])
     assert result.exit_code == 1
     assert "unsupported search: added:1" in result.output
+
+
+def test_query_bad_seed(tmp_path: Path) -> None:
+    """A malformed seed file is a clean CLI error, not a traceback."""
+    seed = tmp_path / "seed.json"
+    seed.write_text("{nope")
+    result = CliRunner().invoke(cli, ["mock", "query", "--seed", str(seed), "x"])
+    assert result.exit_code == 1
+    assert "bad seed" in result.output
+    seed.write_text(
+        json.dumps({"notes": [{"deck": "D", "model": "Nope", "fields": {}}]})
+    )
+    result = CliRunner().invoke(cli, ["mock", "query", "--seed", str(seed), "x"])
+    assert "bad seed" in result.output

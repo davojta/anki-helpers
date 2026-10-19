@@ -288,7 +288,12 @@ def _load_seed(seed: str | None, empty: bool) -> dict[str, Any]:
         return {}
     if seed is None:
         return fake_anki.sample_seed()
-    return cast("dict[str, Any]", json.loads(Path(seed).read_text()))
+    try:
+        data = cast("dict[str, Any]", json.loads(Path(seed).read_text()))
+        fake_anki.load_state(data)
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as e:
+        raise click.ClickException(f"bad seed {seed}: {e!r}") from e
+    return data
 
 
 _seed_options = [
@@ -344,7 +349,8 @@ def serve(
     finally:
         server.httpd.server_close()
         if dump_on_exit:
-            state = fake_anki.dump_state(server.anki.state)
+            with server.anki.lock:
+                state = fake_anki.dump_state(server.anki.state)
             Path(dump_on_exit).write_text(json.dumps(state, indent=2) + "\n")
             click.echo(f"State written to {dump_on_exit}")
 

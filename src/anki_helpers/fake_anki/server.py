@@ -92,8 +92,10 @@ def _handler(server: FakeServer) -> type[BaseHTTPRequestHandler]:
                     self._send({"ok": True})
                 case "/_seed":
                     try:
+                        if not isinstance(body, dict | None):
+                            raise TypeError("seed must be an object")
                         server.reset(cast("dict[str, Any]", body or {}))
-                    except (KeyError, TypeError, ValueError) as e:
+                    except (AttributeError, KeyError, TypeError, ValueError) as e:
                         self._send({"ok": False, "error": f"bad seed: {e!r}"}, 400)
                         return
                     self._send({"ok": True})
@@ -101,11 +103,15 @@ def _handler(server: FakeServer) -> type[BaseHTTPRequestHandler]:
                     items = cast(
                         "list[Any]", body if isinstance(body, list) else [body]
                     )
+                    try:
+                        faults = [Fault(**item) for item in items]
+                    except TypeError as e:
+                        self._send({"ok": False, "error": f"bad fault: {e}"}, 400)
+                        return
                     with server.anki.lock:
-                        if not items:
+                        if not faults:
                             server.anki.faults.clear()
-                        for item in cast("list[dict[str, Any]]", items):
-                            server.anki.faults.append(Fault(**item))
+                        server.anki.faults.extend(faults)
                     self._send({"ok": True})
                 case _:
                     if not isinstance(body, dict):

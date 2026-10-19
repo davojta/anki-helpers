@@ -66,9 +66,10 @@ class FakeAnki:
         with self.lock:
             self.log.append(request)
         name = str(request.get("action", ""))
-        version = int(request.get("version", 4))
-        params = cast("dict[str, Any]", request.get("params") or {})
+        version = 4
         try:
+            version = int(request.get("version", 4))
+            params = cast("dict[str, Any]", request.get("params") or {})
             self._apply_faults(name)
             fn = _ACTIONS.get(name)
             if fn is None:
@@ -83,6 +84,7 @@ class FakeAnki:
 
     def _apply_faults(self, name: str) -> None:
         with self.lock:
+            self.faults[:] = [f for f in self.faults if f.times is None or f.times > 0]
             fault = next((f for f in self.faults if f.action in (name, "*")), None)
             if fault is None:
                 return
@@ -255,7 +257,7 @@ class FakeAnki:
 
     @action("deleteDecks")
     def delete_decks(self, decks: list[str], cardsToo: bool = False) -> None:
-        """Delete decks, their subdecks and their cards' notes."""
+        """Delete decks, their subdecks and their cards; drop notes left cardless."""
         if not cardsToo:
             raise Exception(
                 "Since Anki 2.1.28 it's not possible to delete decks without deleting cards as well"
@@ -264,8 +266,11 @@ class FakeAnki:
             d for d in self.state.decks
             if any(d == x or d.startswith(x + "::") for x in decks)
         }  # fmt: skip
-        notes = {c.note_id for c in self.state.cards.values() if c.deck in doomed}
-        self.delete_notes(sorted(notes))
+        cards = [c for c in self.state.cards.values() if c.deck in doomed]
+        for card in cards:
+            del self.state.cards[card.id]
+        left = {c.note_id for c in self.state.cards.values()}
+        self.delete_notes(sorted({c.note_id for c in cards} - left))
         for d in doomed:
             del self.state.decks[d]
 
@@ -352,7 +357,10 @@ class FakeAnki:
 
     @action("addNotes")
     def add_notes(self, notes: list[dict[str, Any]]) -> list[int | None]:
-        """Add notes; failed ones yield ``None`` (or raise if all fail)."""
+        """Add notes; if any fail, raise the list of errors.
+
+        Like AnkiConnect, notes that succeeded stay added.
+        """
         ids: list[int | None] = []
         errors: list[str] = []
         for n in notes:

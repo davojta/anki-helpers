@@ -7,6 +7,7 @@ import socket
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.request
 from collections.abc import Iterator
 from pathlib import Path
@@ -117,3 +118,20 @@ def test_mock_serve_command(tmp_path: Path) -> None:
     assert proc.returncode == 0
     assert f"listening on {url}" in out
     assert "New" in json.loads(dump.read_text())["decks"]
+
+
+@pytest.mark.parametrize(
+    ("path", "body"),
+    [
+        ("/_faults", None),
+        ("/_faults", {}),
+        ("/_faults", {"bogus": 1}),
+        ("/_seed", [1, 2]),
+    ],
+)
+def test_bad_debug_bodies_get_400(fake: FakeServer, path: str, body: Any) -> None:
+    """Malformed debug requests get a 400 instead of a dropped connection."""
+    with pytest.raises(urllib.error.HTTPError) as exc_info:
+        post(f"{fake.url}{path}", body)
+    assert exc_info.value.code == 400
+    assert post(fake.url, {"action": "version", "version": 6})["result"] == 6
