@@ -55,7 +55,7 @@ one test to add or run. No docs on disk.
 
 Write the docs in this order. Each one reads the previous one.
 
-1. `input.md` (`templates/input.md`): the request as given, the current state, constraints.
+1. `input.md`: the user's input, free form, copied as given. No template, no rewording.
 2. `proposal.md` (`templates/proposal.md`): summary (1–3 sentences), why (1–3 sentences),
    high-level overview of what changes.
 3. `design.md` (`templates/design.md`) with **1–2 HITL markers**.
@@ -64,7 +64,7 @@ Stop after `proposal.md` and ask the user to confirm the direction before writin
 
 ### big
 
-1. `input.md`, as for medium.
+1. `input.md`: as for medium.
 2. `research.md` (`templates/research.md`): existing patterns in the code, verified facts
    vs assumptions vs gaps, decision matrix. Use subagents for broad code search if needed.
 3. `proposal.md`, as for medium. Stop and ask the user to confirm.
