@@ -41,6 +41,9 @@ select = ["E", "F", "W", "I", "B", "UP", "D", "SIM", "RUF", "PT"]
 pycodestyle.max-line-length = 120
 pydocstyle.convention = "google"
 
+[tool.ruff.format]
+exclude = ["*.md"]  # keep hand-aligned snippets in docs
+
 [tool.pyright]
 include = ["src", "tests"]
 strict = ["src"]
