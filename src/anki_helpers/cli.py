@@ -5,6 +5,7 @@ import os
 import re
 import time
 from pathlib import Path
+from typing import cast
 
 import click
 from openai import OpenAI
@@ -14,7 +15,7 @@ from .prompts.examples_for_red_cards import get_prompt
 
 
 # Manually load .env file
-def load_dotenv():
+def load_dotenv() -> None:
     """Load environment variables from a .env file.
 
     Searches for a .env file in the current directory and loads
@@ -60,13 +61,13 @@ def clean_html_content(content: str) -> str:
 
 
 @click.group()
-def cli():
+def cli() -> None:
     """Anki Helpers - A CLI tool to help with Anki flashcards."""
-    pass
+    load_dotenv()
 
 
 @cli.command()
-def version():
+def version() -> None:
     """Show the version of Anki Helpers."""
     # Hardcoded version to avoid importing from anki_helpers
     __version__ = "0.1.0"
@@ -75,13 +76,13 @@ def version():
 
 
 @cli.command()
-def hello_world():
+def hello_world() -> None:
     """Print a hello world message."""
     click.echo("Hello World!")
 
 
 @cli.command()
-def list_deck():
+def list_deck() -> None:
     """List all available Anki decks."""
     try:
         anki = AnkiConnect()
@@ -96,14 +97,14 @@ def list_deck():
             click.echo(f"  • {deck}")
 
     except AnkiConnectError as e:
-        click.echo(f"Error: {str(e)}", err=True)
+        click.echo(f"Error: {e!s}", err=True)
         msg = "Make sure Anki is running with AnkiConnect plugin installed."
         click.echo(msg, err=True)
 
 
 @cli.command()
 @click.option("--limit", default=5, help="Limit the number of cards displayed")
-def list_red_flags(limit):
+def list_red_flags(limit: int) -> None:
     """List all words with red flags in Anki, sorted by due date (descending)."""
     try:
         anki = AnkiConnect()
@@ -140,7 +141,7 @@ def list_red_flags(limit):
                     )
                 except Exception as e:
                     # Log the error but continue processing
-                    click.echo(f"Some error with formatting: {str(e)}", err=True)
+                    click.echo(f"Some error with formatting: {e!s}", err=True)
                     due_date = "Error"
 
                 # Display the card information
@@ -151,7 +152,7 @@ def list_red_flags(limit):
                 click.echo("")
 
     except AnkiConnectError as e:
-        click.echo(f"Error: {str(e)}", err=True)
+        click.echo(f"Error: {e!s}", err=True)
         msg = "Make sure Anki is running with AnkiConnect plugin installed."
         click.echo(msg, err=True)
 
@@ -161,7 +162,7 @@ def list_red_flags(limit):
 @click.option(
     "--limit", default=None, type=int, help="Limit the number of words to process"
 )
-def get_examples_for_red_flags_cards(output_dir, limit):
+def get_examples_for_red_flags_cards(output_dir: str, limit: int | None) -> None:
     """Generate example sentences for red flag cards.
 
     This command:
@@ -175,8 +176,7 @@ def get_examples_for_red_flags_cards(output_dir, limit):
         limit: Maximum number of words to process (default: all words)
     """
     try:
-        # Load API key from .env file
-        load_dotenv()
+        # API key comes from the environment (.env is loaded by the cli group)
         api_key = os.getenv("API_KEY")
 
         if not api_key:
@@ -196,7 +196,7 @@ def get_examples_for_red_flags_cards(output_dir, limit):
             return
 
         # Extract words from cards
-        words = []
+        words: list[str] = []
         # Apply limit if specified
         cards_to_process = cards[:limit] if limit is not None else cards
 
@@ -218,7 +218,7 @@ def get_examples_for_red_flags_cards(output_dir, limit):
         click.echo(f"Created input file with {len(words)} words at {input_file_path}")
 
         # Prepare prompt for OpenAI
-        with open(input_file_path, "r") as f:
+        with open(input_file_path) as f:
             words_content = f.read()
 
         prompt = get_prompt(words_content)
@@ -267,16 +267,16 @@ def get_examples_for_red_flags_cards(output_dir, limit):
         # Save to results.md
         results_file_path = output_path / "results.md"
         with open(results_file_path, "w") as f:
-            f.write(response_content)
+            f.write(cast("str", response_content))
 
         click.echo(f"\nResults saved to {results_file_path}")
 
     except AnkiConnectError as e:
-        click.echo(f"Error: {str(e)}", err=True)
+        click.echo(f"Error: {e!s}", err=True)
         msg = "Make sure Anki is running with AnkiConnect plugin installed."
         click.echo(msg, err=True)
     except Exception as e:
-        click.echo(f"Error: {str(e)}", err=True)
+        click.echo(f"Error: {e!s}", err=True)
 
 
 if __name__ == "__main__":

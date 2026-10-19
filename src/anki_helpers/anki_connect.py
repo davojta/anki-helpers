@@ -1,8 +1,11 @@
 """AnkiConnect API client for Anki Helpers."""
 
-from typing import Any, Dict, List
+import os
+from typing import Any, cast
 
 import requests
+
+DEFAULT_URL = "http://localhost:8765"
 
 
 class AnkiConnectError(Exception):
@@ -14,16 +17,16 @@ class AnkiConnectError(Exception):
 class AnkiConnect:
     """Client for interacting with AnkiConnect API."""
 
-    def __init__(self, url: str = "http://localhost:8765"):
+    def __init__(self, url: str | None = None) -> None:
         """Initialize AnkiConnect client.
 
         Args:
-            url: The URL where AnkiConnect is running.
-                Defaults to localhost:8765.
+            url: The URL where AnkiConnect is running. Falls back to the
+                ANKI_CONNECT_URL environment variable, then to DEFAULT_URL.
         """
-        self.url = url
+        self.url: str = url or os.environ.get("ANKI_CONNECT_URL") or DEFAULT_URL
 
-    def _invoke(self, action: str, **params) -> Any:
+    def _invoke(self, action: str, **params: Any) -> Any:
         """Invoke an AnkiConnect action.
 
         Args:
@@ -42,7 +45,7 @@ class AnkiConnect:
                 self.url, json={"action": action, "version": 6, "params": params}
             )
             response.raise_for_status()
-            result = response.json()
+            result = cast("dict[str, Any]", response.json())
 
             if result.get("error"):
                 msg = f"AnkiConnect error: {result['error']}"
@@ -50,10 +53,10 @@ class AnkiConnect:
 
             return result.get("result")
         except requests.RequestException as e:
-            msg = f"Failed to connect to AnkiConnect: {str(e)}"
-            raise AnkiConnectError(msg)
+            msg = f"Failed to connect to AnkiConnect: {e!s}"
+            raise AnkiConnectError(msg) from e
 
-    def get_deck_names(self) -> List[str]:
+    def get_deck_names(self) -> list[str]:
         """Get a list of all deck names.
 
         Returns:
@@ -61,7 +64,7 @@ class AnkiConnect:
         """
         return self._invoke("deckNames")
 
-    def find_notes_with_red_flag(self) -> List[Dict[str, Any]]:
+    def find_notes_with_red_flag(self) -> list[dict[str, Any]]:
         """Find all notes that have a red flag.
 
         In Anki, red flags are typically marked with the tag 'marked'.
@@ -90,7 +93,7 @@ class AnkiConnect:
 
         return notes_info
 
-    def get_intervals(self, card_ids: List[int]) -> Dict[int, int]:
+    def get_intervals(self, card_ids: list[int]) -> dict[int, int]:
         """Get intervals for the specified cards.
 
         Args:
@@ -105,9 +108,12 @@ class AnkiConnect:
         intervals = self._invoke("getIntervals", cards=card_ids)
 
         # Create a dictionary mapping card IDs to their intervals
-        return {card_id: interval for card_id, interval in zip(card_ids, intervals)}
+        return {
+            card_id: interval
+            for card_id, interval in zip(card_ids, intervals, strict=True)
+        }
 
-    def find_cards_with_red_flag(self) -> List[Dict[str, Any]]:
+    def find_cards_with_red_flag(self) -> list[dict[str, Any]]:
         """Find all cards that have a red flag and include due date information.
 
         Returns:
@@ -152,7 +158,7 @@ class AnkiConnect:
 
         return cards_info
 
-    def find_cards_with_red_flag_sorted(self) -> List[Dict[str, Any]]:
+    def find_cards_with_red_flag_sorted(self) -> list[dict[str, Any]]:
         """Find all cards that have a red flag and include due date information with sorting.
 
         Returns:
