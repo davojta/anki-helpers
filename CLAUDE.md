@@ -5,20 +5,20 @@ Python CLI tool for working with Anki flashcard data via the AnkiConnect plugin.
 ## Setup
 
 ```bash
-poetry install
+uv sync
 ```
 
 ## Common Commands
 
 ```bash
 # Run all tests
-poetry run pytest
+uv run pytest
 
 # Run the CLI
-poetry run anki-helpers --help
-poetry run anki-helpers list-deck
-poetry run anki-helpers list-red-flags [--limit N]
-poetry run anki-helpers get-examples-for-red-flags-cards [--limit N] OUTPUT_DIR
+uv run anki-helpers --help
+uv run anki-helpers list-deck
+uv run anki-helpers list-red-flags [--limit N]
+uv run anki-helpers get-examples-for-red-flags-cards [--limit N] OUTPUT_DIR
 ```
 
 ## Architecture
@@ -41,13 +41,13 @@ Pre-commit hooks run automatically on commit:
 Install hooks after cloning:
 
 ```bash
-poetry run pre-commit install --hook-type commit-msg
+uv run pre-commit install --hook-type commit-msg
 ```
 
 Run hooks manually:
 
 ```bash
-poetry run pre-commit run --all-files
+uv run pre-commit run --all-files
 ```
 
 ## Environment
