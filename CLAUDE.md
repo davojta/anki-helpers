@@ -11,8 +11,16 @@ uv sync
 ## Common Commands
 
 ```bash
-# Run all tests
-uv run pytest
+# Full gate: lint + typecheck + tests (run before commit/PR)
+make check
+
+# Individual steps
+make lint         # ruff check + ruff format --check
+make typecheck    # pyright
+make test         # pytest with coverage
+make test-unit    # pytest -m "not e2e"
+make test-e2e     # pytest -m e2e
+make fmt          # ruff check --fix + ruff format
 
 # Run the CLI
 uv run anki-helpers --help
@@ -26,16 +34,18 @@ uv run anki-helpers get-examples-for-red-flags-cards [--limit N] OUTPUT_DIR
 - `src/anki_helpers/cli.py` — CLI entry point; all Click commands live here
 - `src/anki_helpers/anki_connect.py` — AnkiConnect HTTP API wrapper
 - `src/anki_helpers/prompts/` — Prompt templates for OpenAI calls
-- `tests/cli_test.py` — Tests using Click's `CliRunner`; AnkiConnect and OpenAI are mocked
+- `tests/unit/` — Click `CliRunner` tests and client tests; AnkiConnect and OpenAI HTTP are mocked
+- `tests/e2e/` — runs the installed CLI against a stdlib stub AnkiConnect server
+- `tests/conftest.py` — shared fixtures (isolated env, `.env` handling)
 
 ## Code Quality
 
-Pre-commit hooks run automatically on commit:
+Local pre-commit hooks run on commit (via `uv run`, versions from `uv.lock`):
 
-- **black** — code formatting
-- **isort** — import sorting (black profile)
-- **flake8** — linting (max line length 120, docstrings required)
-- **mypy** — static type checking
+- **ruff check** — lint (`--fix`)
+- **ruff format** — formatting
+- **pyright** — type checking; strict on `src/`, standard on `tests/`
+- **pre-commit-hooks** — whitespace, EOF, YAML/TOML/JSON syntax, debug statements, etc.
 - **conventional-pre-commit** — enforces conventional commit messages
 
 Install hooks after cloning:
@@ -52,13 +62,18 @@ uv run pre-commit run --all-files
 
 ## Environment
 
-`get-examples-for-red-flags-cards` requires an OpenAI API key. Create a `.env` file in the project root:
+Copy the template and fill in values:
 
+```bash
+cp .env.example .env
 ```
-API_KEY="your-openai-api-key"
-```
+
+- `API_KEY` — OpenAI API key; required by `get-examples-for-red-flags-cards`
+- `ANKI_CONNECT_URL` — AnkiConnect endpoint; default `http://localhost:8765`
+
+Shell environment variables take precedence over `.env`. `.env` is git-ignored.
 
 ## Requirements
 
 - Anki must be running with the AnkiConnect plugin installed for commands that talk to Anki.
-- OpenAI commands require a valid `API_KEY` in `.env`.
+- OpenAI commands require a valid `API_KEY` (in `.env` or the shell environment).

@@ -40,35 +40,25 @@ By default, all red flag cards are processed, but you can limit the number of wo
 - Python packages: `openai`, `python-dotenv`
 - A `.env` file in the project root with your OpenAI API key: `API_KEY = "your-api-key"`
 
-## Running Tests
+## Configuration
 
-To run the tests for this project, you can use Python's built-in unittest framework through uv:
+Copy `.env.example` to `.env` and fill in:
 
-```bash
-# Run all tests
-uv run python -m unittest discover tests
+- `API_KEY` — OpenAI API key (for `get-examples-for-red-flags-cards`)
+- `ANKI_CONNECT_URL` — AnkiConnect endpoint (default `http://localhost:8765`)
 
-# Run a specific test file
-uv run python -m unittest tests/cli_test.py
+Shell environment variables override `.env`.
 
-# Run a specific test function
-uv run python -m unittest tests.cli_test.test_version
-```
-
-Alternatively, you can install pytest and use it to run the tests:
+## Development
 
 ```bash
-# Install pytest
-uv add --dev pytest
-
-# Run all tests
-uv run pytest
-
-# Run a specific test file
-uv run pytest tests/cli_test.py
-
-# Run a specific test function
-uv run pytest tests/cli_test.py::test_version
+make check        # lint + typecheck + tests (the full gate)
+make lint         # ruff check + ruff format --check
+make typecheck    # pyright
+make test         # pytest with coverage
+make test-unit    # unit tests only
+make test-e2e     # end-to-end tests only
+make fmt          # auto-fix lint and formatting
 ```
 
 ## Requirements

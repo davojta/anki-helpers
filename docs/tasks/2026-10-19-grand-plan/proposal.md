@@ -5,7 +5,7 @@ Full detail (designs, schemas, CI YAML, every issue's acceptance criteria):
 
 ## Approach
 
-Rebuild on uv + hatchling, ruff, mypy --strict, pytest, Typer + Rich, httpx,
+Rebuild on uv + hatchling, ruff, pyright (strict), pytest, Typer + Rich, httpx,
 pydantic v2 (§2). Everything plugs into two foundations:
 
 1. **Fake AnkiConnect** (§4.1) — stateful v6 emulator behind an `AnkiPort`
@@ -60,7 +60,7 @@ each issue is filed on GitHub with labels `agent` + `stage:Sx`.
 
 ## Open decisions (§10)
 
-- [ ] D1 mypy vs pyright
+- [x] D1 mypy vs pyright: pyright ([ADR-0001](../../adr/0001-stack.md))
 - [ ] D2 AnkiConnect v6 only vs adding JSON-RPC v1 adapter
 - [ ] D3 Conflict default: no-overwrite + conflict file vs LWW
 - [ ] D4 Standalone FastMCP vs official `mcp` SDK `MCPServer`
