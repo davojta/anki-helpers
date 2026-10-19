@@ -20,8 +20,10 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked
 
-      - name: Run pre-commit checks
-        run: uv run pre-commit run --all-files
+      - name: make check
+        run: make check
 
-      - name: Run tests
-        run: uv run pytest
+      - name: Generic pre-commit hooks
+        env:
+          SKIP: ruff-check,ruff-format,pyright
+        run: uv run pre-commit run --all-files
