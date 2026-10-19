@@ -1,15 +1,19 @@
 """Command-line interface for Anki Helpers."""
 
 import html
+import json
 import os
 import re
+import signal
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 import click
 from openai import OpenAI
 
+from . import fake_anki
 from .anki_connect import AnkiConnect, AnkiConnectError
 from .prompts.examples_for_red_cards import get_prompt
 
@@ -277,6 +281,95 @@ def get_examples_for_red_flags_cards(output_dir: str, limit: int | None) -> None
         click.echo(msg, err=True)
     except Exception as e:
         click.echo(f"Error: {e!s}", err=True)
+
+
+def _load_seed(seed: str | None, empty: bool) -> dict[str, Any]:
+    if empty:
+        return {}
+    if seed is None:
+        return fake_anki.sample_seed()
+    return cast("dict[str, Any]", json.loads(Path(seed).read_text()))
+
+
+_seed_options = [
+    click.option(
+        "--seed",
+        type=click.Path(exists=True, dir_okay=False),
+        help="Seed collection JSON (default: bundled sample).",
+    ),
+    click.option("--empty", is_flag=True, help="Start with an empty collection."),
+]
+
+
+def seed_options(fn: Callable[..., Any]) -> Callable[..., Any]:
+    """Add ``--seed`` and ``--empty`` to a command."""
+    for option in reversed(_seed_options):
+        fn = option(fn)
+    return fn
+
+
+@cli.group()
+def mock() -> None:
+    """Fake AnkiConnect for testing without a running Anki."""
+
+
+@mock.command()
+@click.option("--host", default="127.0.0.1", show_default=True)
+@click.option("--port", default=8765, show_default=True, type=int)
+@seed_options
+@click.option(
+    "--dump-on-exit",
+    type=click.Path(dir_okay=False),
+    help="Write the final collection to this JSON file on exit.",
+)
+def serve(
+    host: str, port: int, seed: str | None, empty: bool, dump_on_exit: str | None
+) -> None:
+    """Serve a fake AnkiConnect v6 API over HTTP until Ctrl+C."""
+    server = fake_anki.make_server(_load_seed(seed, empty), host, port)
+    click.echo(f"Fake AnkiConnect listening on {server.url}")
+    click.echo("Debug: GET /_state, GET /_log, POST /_reset, /_seed, /_faults")
+
+    def stop(signum: int, frame: object) -> None:
+        raise KeyboardInterrupt
+
+    # SIGTERM (docker stop, kill) and SIGINT (ignored when backgrounded) both
+    # end the server cleanly so --dump-on-exit runs.
+    signal.signal(signal.SIGTERM, stop)
+    signal.signal(signal.SIGINT, stop)
+    try:
+        server.httpd.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.httpd.server_close()
+        if dump_on_exit:
+            state = fake_anki.dump_state(server.anki.state)
+            Path(dump_on_exit).write_text(json.dumps(state, indent=2) + "\n")
+            click.echo(f"State written to {dump_on_exit}")
+
+
+@mock.command()
+@click.argument("query")
+@seed_options
+@click.option("--cards", is_flag=True, help="Match cards instead of notes.")
+def query(query: str, seed: str | None, empty: bool, cards: bool) -> None:
+    """Run an Anki search QUERY against the fake collection and print matches."""
+    anki = fake_anki.FakeAnki(state=fake_anki.load_state(_load_seed(seed, empty)))
+    reply = anki.handle(
+        {"action": "findCards" if cards else "findNotes", "version": 6,
+         "params": {"query": query}}
+    )  # fmt: skip
+    if reply["error"]:
+        raise click.ClickException(reply["error"])
+    ids = cast("list[int]", reply["result"])
+    click.echo(f"{len(ids)} {'card' if cards else 'note'}(s) match {query!r}")
+    for id_ in ids:
+        card = anki.state.cards[id_] if cards else None
+        note = anki.state.notes[card.note_id if card else id_]
+        front = clean_html_content(next(iter(note.fields.values()), ""))
+        where = f"{card.deck} ord={card.ord}" if card else ", ".join(note.tags)
+        click.echo(f"  {id_}  {front}  [{where}]")
 
 
 if __name__ == "__main__":

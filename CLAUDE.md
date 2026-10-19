@@ -27,6 +27,10 @@ uv run anki-helpers --help
 uv run anki-helpers list-deck
 uv run anki-helpers list-red-flags [--limit N]
 uv run anki-helpers get-examples-for-red-flags-cards [--limit N] OUTPUT_DIR
+
+# Fake AnkiConnect (no Anki needed)
+uv run anki-helpers mock query "flag:1 prop:due<0" [--cards] [--seed F | --empty]
+uv run anki-helpers mock serve --port 8765 [--seed F | --empty] [--dump-on-exit OUT]
 ```
 
 ## Architecture
@@ -34,8 +38,9 @@ uv run anki-helpers get-examples-for-red-flags-cards [--limit N] OUTPUT_DIR
 - `src/anki_helpers/cli.py` — CLI entry point; all Click commands live here
 - `src/anki_helpers/anki_connect.py` — AnkiConnect HTTP API wrapper
 - `src/anki_helpers/prompts/` — Prompt templates for OpenAI calls
+- `src/anki_helpers/fake_anki/` — fake AnkiConnect v6: `state.py` (collection, seed load/dump), `search.py` (Anki query subset), `actions.py` (`FakeAnki` action handlers), `server.py` (HTTP + `/_state` `/_log` `/_reset` `/_seed` `/_faults`), `fixtures/basic.json` (sample seed)
 - `tests/unit/` — Click `CliRunner` tests and client tests; AnkiConnect and OpenAI HTTP are mocked
-- `tests/e2e/` — runs the installed CLI against a stdlib stub AnkiConnect server
+- `tests/e2e/` — runs the installed CLI against a stdlib stub AnkiConnect server and against the fake (`fake_anki.running()`)
 - `tests/conftest.py` — shared fixtures (isolated env, `.env` handling)
 
 ## Code Quality
