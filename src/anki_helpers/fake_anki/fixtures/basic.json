@@ -1,0 +1,69 @@
+{
+  "today": 20000,
+  "decks": ["German::Vocab", "Spanish", "Default"],
+  "notes": [
+    {
+      "id": 1001,
+      "deck": "German::Vocab",
+      "model": "Basic",
+      "fields": {"Front": "<b>der Hund</b>", "Back": "dog"},
+      "tags": ["noun", "animals"],
+      "cards": [{"id": 2001, "type": 2, "due": -3, "interval": 12, "factor": 2500, "reps": 6, "flags": 1}]
+    },
+    {
+      "id": 1002,
+      "deck": "German::Vocab",
+      "model": "Basic",
+      "fields": {"Front": "die Katze", "Back": "cat"},
+      "tags": ["noun", "animals"],
+      "cards": [{"id": 2002, "type": 2, "due": 0, "interval": 4, "factor": 2300, "reps": 3, "lapses": 1, "flags": 1}]
+    },
+    {
+      "id": 1003,
+      "deck": "German::Vocab",
+      "model": "Basic",
+      "fields": {"Front": "laufen&nbsp;", "Back": "to run"},
+      "tags": ["verb"],
+      "cards": [{"id": 2003, "type": 2, "due": 5, "interval": 20, "factor": 2650, "reps": 8, "flags": 1}]
+    },
+    {
+      "id": 1004,
+      "deck": "German::Vocab",
+      "model": "Basic (and reversed card)",
+      "fields": {"Front": "schnell", "Back": "fast"},
+      "tags": ["adjective"],
+      "cards": [
+        {"id": 2004, "type": 2, "due": 14, "interval": 30, "factor": 2500, "reps": 9, "flags": 1},
+        {"id": 2005, "type": 2, "due": -10, "interval": 2, "factor": 1900, "reps": 7, "lapses": 3, "flags": 2}
+      ]
+    },
+    {
+      "id": 1005,
+      "deck": "German::Vocab",
+      "model": "Basic",
+      "fields": {"Front": "das Haus", "Back": "house"},
+      "tags": ["noun"],
+      "cards": [{"id": 2006}]
+    },
+    {
+      "id": 1006,
+      "deck": "Spanish",
+      "model": "Basic",
+      "fields": {"Front": "el perro", "Back": "dog"},
+      "tags": ["noun", "animals"],
+      "cards": [{"id": 2007, "type": 2, "queue": -1, "due": 2, "interval": 7, "factor": 2500, "reps": 4}]
+    },
+    {
+      "id": 1007,
+      "deck": "Spanish",
+      "model": "Cloze",
+      "fields": {"Text": "{{c1::Hola}}, ¿cómo {{c2::estás::verb}}?", "Back Extra": "greeting"},
+      "tags": ["phrase"],
+      "cards": [
+        {"id": 2008, "type": 2, "due": 1, "interval": 3, "factor": 2500, "reps": 2, "flags": 1},
+        {"id": 2009}
+      ]
+    }
+  ],
+  "media": {"hello.txt": "aGVsbG8="}
+}
