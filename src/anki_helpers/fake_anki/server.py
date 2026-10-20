@@ -6,7 +6,8 @@
 - ``GET /_log`` — request bodies received so far
 - ``POST /_reset`` — reload the startup seed, clear log and faults
 - ``POST /_seed`` — replace the collection with the posted seed document
-- ``POST /_faults`` — ``{"action", "error"?, "latency_ms"?, "times"?}``; ``[]`` clears
+- ``POST /_faults`` — ``{"action", "error"?, "latency_ms"?, "times"?, "noop"?}``;
+  ``[]`` clears
 """
 
 import json

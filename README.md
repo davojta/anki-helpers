@@ -58,7 +58,8 @@ curl -s localhost:8765 -d '{"action":"findNotes","version":6,"params":{"query":"
 - Sample collection: `src/anki_helpers/fake_anki/fixtures/basic.json` (also the seed file format).
 - Debug endpoints: `GET /_state` (dump as seed), `GET /_log` (requests received),
   `POST /_reset` (back to startup seed), `POST /_seed` (load a seed),
-  `POST /_faults` (`{"action": "findNotes", "error": "collection is not available", "times": 1, "latency_ms": 0}`; `[]` clears).
+  `POST /_faults` (`{"action": "findNotes", "error": "collection is not available", "times": 1, "latency_ms": 0}`; `[]` clears;
+  `{"action": "updateNoteFields", "noop": true}` answers success without changing the note, like a note open in Anki's browser).
 - Search subset: `and`/`or`/`-`/parentheses/quotes, bare text and `field:value` with `*` `_` wildcards,
   `deck:` (incl. subdecks), `tag:` (incl. child tags, `tag:none`), `note:`, `card:`, `nid:`, `cid:`, `flag:`,
   `is:new|learn|review|due|suspended|buried`, `prop:due|ivl|reps|lapses|ease` with `= != < <= > >=`, `edited:N`.

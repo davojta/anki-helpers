@@ -71,12 +71,15 @@ def run_cli(tmp_path: Path) -> RunCli:
     executable = str(exe) if exe.exists() else shutil.which("anki-helpers")
     assert executable, "anki-helpers executable not found"
 
-    def run(*args: str, url: str) -> subprocess.CompletedProcess[str]:
-        env = {k: v for k, v in os.environ.items() if k != "API_KEY"}
-        env["ANKI_CONNECT_URL"] = url
+    def run(
+        *args: str, url: str, env: dict[str, str] | None = None
+    ) -> subprocess.CompletedProcess[str]:
+        full_env = {k: v for k, v in os.environ.items() if k != "API_KEY"}
+        full_env["ANKI_CONNECT_URL"] = url
+        full_env.update(env or {})
         return subprocess.run(
             [executable, *args],
-            env=env,
+            env=full_env,
             cwd=tmp_path,
             timeout=10,
             text=True,

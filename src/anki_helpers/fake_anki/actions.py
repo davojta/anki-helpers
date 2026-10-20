@@ -44,6 +44,9 @@ class Fault:
     error: str | None = None
     latency_ms: int = 0
     times: int | None = None  # None = forever
+    # Answer success without running the action, like updateNoteFields while
+    # the note is open in Anki's browser.
+    noop: bool = False
 
 
 @dataclass
@@ -70,24 +73,25 @@ class FakeAnki:
         try:
             version = int(request.get("version", 4))
             params = cast("dict[str, Any]", request.get("params") or {})
-            self._apply_faults(name)
+            noop = self._apply_faults(name)
             fn = _ACTIONS.get(name)
             if fn is None:
                 raise Exception("unsupported action")
             with self.lock:
-                result = fn(self, **params)
+                result = None if noop else fn(self, **params)
         except Exception as e:
             return {"result": None, "error": str(e)}
         if version <= 4:
             return result
         return {"result": result, "error": None}
 
-    def _apply_faults(self, name: str) -> None:
+    def _apply_faults(self, name: str) -> bool:
+        """Sleep/raise per the first matching fault; return its ``noop``."""
         with self.lock:
             self.faults[:] = [f for f in self.faults if f.times is None or f.times > 0]
             fault = next((f for f in self.faults if f.action in (name, "*")), None)
             if fault is None:
-                return
+                return False
             if fault.times is not None:
                 fault.times -= 1
                 if fault.times <= 0:
@@ -96,6 +100,7 @@ class FakeAnki:
             time.sleep(fault.latency_ms / 1000)
         if fault.error:
             raise Exception(fault.error)
+        return fault.noop
 
     # --- helpers --------------------------------------------------------------
 

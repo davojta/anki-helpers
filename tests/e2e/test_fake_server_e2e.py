@@ -6,10 +6,12 @@ import signal
 import socket
 import subprocess
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
 from collections.abc import Iterator
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
@@ -59,6 +61,95 @@ def test_list_red_flags(fake: FakeServer, run_cli: RunCli) -> None:
     assert fronts == ["  • der Hund", "  • die Katze"]
     queries = [r["params"].get("query") for r in get(f"{fake.url}/_log")]
     assert "flag:1 prop:due<0 prop:due>-7" in queries
+
+
+def test_list_red_flags_default_limit_and_order(
+    fake: FakeServer, run_cli: RunCli
+) -> None:
+    """Default --limit is 5; order is by dueQuery ascending (overdue first).
+
+    Pins today's behaviour; S1-07 asks for "due desc" (see PR notes).
+    """
+    result = run_cli("list-red-flags", url=fake.url)
+    assert result.returncode == 0, result.stderr
+    fronts = [line for line in result.stdout.splitlines() if line.startswith("  • ")]
+    assert fronts == [
+        "  • der Hund",
+        "  • die Katze",
+        "  • {{c1::Hola}}, ¿cómo {{c2::estás::verb}}?",
+        "  • {{c1::Hola}}, ¿cómo {{c2::estás::verb}}?",
+        "  • laufen",
+    ]
+    assert "showing top 5" in result.stdout
+
+
+@pytest.fixture
+def openai_stub() -> Iterator[tuple[str, list[dict[str, Any]]]]:
+    """Answer OpenAI chat completions with a fixed reply; record request bodies."""
+    bodies: list[dict[str, Any]] = []
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:
+            length = int(self.headers.get("Content-Length", 0))
+            bodies.append(json.loads(self.rfile.read(length)))
+            data = json.dumps(
+                {
+                    "id": "chatcmpl-1",
+                    "object": "chat.completion",
+                    "created": 0,
+                    "model": "gpt-4o",
+                    "choices": [
+                        {
+                            "index": 0,
+                            "message": {"role": "assistant", "content": "STUB REPLY"},
+                            "finish_reason": "stop",
+                        }
+                    ],
+                }
+            ).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+        def log_message(self, format: str, *args: Any) -> None:
+            pass
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield f"http://127.0.0.1:{server.server_address[1]}/v1", bodies
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
+def test_get_examples_for_red_flags_cards(
+    fake: FakeServer,
+    run_cli: RunCli,
+    openai_stub: tuple[str, list[dict[str, Any]]],
+    tmp_path: Path,
+) -> None:
+    """Red-flag words from the fake go into the prompt; the reply is saved."""
+    base_url, bodies = openai_stub
+    out = tmp_path / "out"
+    result = run_cli(
+        "get-examples-for-red-flags-cards",
+        "--limit",
+        "3",
+        str(out),
+        url=fake.url,
+        env={"API_KEY": "test-key", "OPENAI_BASE_URL": base_url},
+    )
+    assert result.returncode == 0, result.stderr
+    assert "Error" not in result.stderr
+    assert (out / "input-words.md").read_text() == "der Hund\ndie Katze\nlaufen"
+    assert (out / "results.md").read_text() == "STUB REPLY"
+    assert len(bodies) == 1
+    assert "der Hund" in bodies[0]["messages"][1]["content"]
 
 
 def test_state_seed_reset(fake: FakeServer) -> None:

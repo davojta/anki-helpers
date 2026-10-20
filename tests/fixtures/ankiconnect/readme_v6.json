@@ -1,0 +1,74 @@
+{
+  "_source": "Response examples from the AnkiConnect README (API v6). Hand-copied, not recorded; S1-08 replaces them with responses recorded from a real headless Anki.",
+  "version": 6,
+  "requestPermission": {"permission": "granted", "requireApikey": false, "version": 6},
+  "deckNames": ["Default"],
+  "deckNamesAndIds": {"Default": 1},
+  "createDeck": 1519323742721,
+  "modelNames": ["Basic", "Basic (and reversed card)"],
+  "modelNamesAndIds": {"Basic": 1483883011648, "Basic (and reversed card)": 1483883011644},
+  "modelFieldNames": ["Front", "Back"],
+  "findNotes": [1483959289817, 1483959291695],
+  "findCards": [1494723142483, 1494703460437],
+  "notesInfo": [
+    {
+      "noteId": 1502298033753,
+      "profile": "User_1",
+      "modelName": "Basic",
+      "tags": ["tag", "another_tag"],
+      "fields": {
+        "Front": {"value": "front content", "order": 0},
+        "Back": {"value": "back content", "order": 1}
+      },
+      "mod": 1718377864,
+      "cards": [1498938915662]
+    }
+  ],
+  "notesModTime": [{"noteId": 1498938915662, "mod": 1629454092}],
+  "cardsInfo": [
+    {
+      "answer": "back content",
+      "question": "front content",
+      "deckName": "Default",
+      "modelName": "Basic",
+      "fieldOrder": 1,
+      "fields": {
+        "Front": {"value": "front content", "order": 0},
+        "Back": {"value": "back content", "order": 1}
+      },
+      "css": "p {font-family:Arial;}",
+      "cardId": 1498938915662,
+      "interval": 16,
+      "note": 1502298033753,
+      "ord": 1,
+      "type": 0,
+      "queue": 0,
+      "due": 1,
+      "reps": 1,
+      "lapses": 0,
+      "left": 6,
+      "mod": 1629454092
+    }
+  ],
+  "cardsModTime": [{"cardId": 1498938915662, "mod": 1629454092}],
+  "cardsToNotes": [1502098034045, 1502098034048],
+  "getIntervals": [-14400, 3],
+  "getEaseFactors": [4100, 3900],
+  "areSuspended": [false, true, null],
+  "areDue": [false, true],
+  "suspend": true,
+  "unsuspend": true,
+  "addNote": 1496198395707,
+  "addNotes": [1496198395707, 1496198395708],
+  "canAddNotes": [true],
+  "canAddNotesWithErrorDetail": [
+    {"canAdd": false, "error": "cannot create note because it is a duplicate"},
+    {"canAdd": true}
+  ],
+  "getNoteTags": ["european-languages"],
+  "getTags": ["european-languages", "idioms"],
+  "storeMediaFile": "_hello.txt",
+  "retrieveMediaFile": "SGVsbG8sIHdvcmxkIQ==",
+  "getMediaFilesNames": ["_hell.txt"],
+  "multi": [["Default"], {"result": ["Default"], "error": null}]
+}
