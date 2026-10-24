@@ -50,7 +50,7 @@ using only read actions (`findCards "flag:1"`, then `cardsInfo` on 3 cards).
 
 ## Update (2026-10-24): recorded shapes
 
-`tests/fixtures/ankiconnect/record.py` now records the 25 read-only actions from a real Anki into
+`scripts/record_ankiconnect.py` now records the 25 read-only actions from a real Anki into
 `recorded_v6.json`, with raw values (approved by Dzianis Sheka). `test_fake_shapes.py` checks those first and
 falls back to `readme_v6.json` for the 6 write actions. `EXTRA_KEYS` is gone, because the recording contains
 `factor`/`flags`. `nextReviews` is listed in `UNMODELLED`.

@@ -1,7 +1,7 @@
 """Fake responses have the same JSON shape as real AnkiConnect ones.
 
 Read-only actions are checked against ``recorded_v6.json`` (recorded from a
-real Anki by ``record.py``). Write actions are not recorded, so they fall back
+real Anki by ``scripts/record_ankiconnect.py``). Write actions are not recorded, so they fall back
 to ``readme_v6.json``, which is hand-copied from the AnkiConnect README.
 """
 

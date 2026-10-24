@@ -1,8 +1,8 @@
 """Record read-only AnkiConnect v6 responses from a running Anki (S1-08).
 
-Usage: uv run python tests/fixtures/ankiconnect/record.py [URL]
+Usage: uv run python scripts/record_ankiconnect.py [URL]
 
-Writes ``recorded_v6.json`` next to this file. Only read-only actions are
+Writes ``tests/fixtures/ankiconnect/recorded_v6.json``. Only read-only actions are
 called, so the collection is not modified. Values are raw except: id and file
 lists are cut to ``KEEP`` items and media base64 to 64 chars (shapes unchanged).
 """
@@ -14,7 +14,7 @@ from typing import Any
 
 import requests
 
-OUT = Path(__file__).with_name("recorded_v6.json")
+OUT = Path(__file__).parents[1] / "tests/fixtures/ankiconnect/recorded_v6.json"
 KEEP = 5
 MISSING_CARD = 9
 
@@ -96,7 +96,7 @@ def main() -> None:
     url = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8765"
     doc = {
         "_source": (
-            "Responses recorded from a real Anki + AnkiConnect (API v6) by record.py. "
+            "Responses recorded from a real Anki + AnkiConnect (API v6) by scripts/record_ankiconnect.py. "
             f"Read-only actions only; id/file lists cut to {KEEP}, media base64 to 64 chars."
         ),
         **record(url),

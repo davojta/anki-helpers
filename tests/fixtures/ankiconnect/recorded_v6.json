@@ -1,5 +1,5 @@
 {
-  "_source": "Responses recorded from a real Anki + AnkiConnect (API v6) by record.py. Read-only actions only; id/file lists cut to 5, media base64 to 64 chars.",
+  "_source": "Responses recorded from a real Anki + AnkiConnect (API v6) by scripts/record_ankiconnect.py. Read-only actions only; id/file lists cut to 5, media base64 to 64 chars.",
   "version": 6,
   "requestPermission": {
     "permission": "granted",
