@@ -109,7 +109,7 @@ def list_deck() -> None:
 @cli.command()
 @click.option("--limit", default=5, help="Limit the number of cards displayed")
 def list_red_flags(limit: int) -> None:
-    """List all words with red flags in Anki, sorted by due date (descending)."""
+    """List all words with red flags in Anki, sorted by due date (ascending, most urgent first)."""
     try:
         anki = AnkiConnect()
         cards = anki.find_cards_with_red_flag_sorted()

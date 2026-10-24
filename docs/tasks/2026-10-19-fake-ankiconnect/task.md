@@ -1,11 +1,11 @@
 ---
 schema: 1
 id: 2026-10-19-fake-ankiconnect
-title: Fake AnkiConnect server (S1-03..S1-06)
+title: Fake AnkiConnect server (S1-03..S1-07)
 project: anki-helpers
 status: backlog
 created: 2026-10-19
-updated: 2026-10-19
+updated: 2026-10-20
 status_changed: 2026-10-19
 tags: [task, smol]
 parent: 2026-10-19-grand-plan
