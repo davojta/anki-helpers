@@ -32,3 +32,18 @@ The table below records the observed output of each step.
    Rendering the cloze for each card, or showing the card ordinal, would help. This feeds the open
    "readability with the cloze note" item.
 3. Sort order is ascending by due, as the PR describes. The decision on the S1-07 AC is still open.
+
+## `cardsInfo` extras vs real Anki
+
+2026-10-24: checked by Claude Code against Dzianis Sheka's running Anki + AnkiConnect (API version 6),
+using only read actions (`findCards "flag:1"`, then `cardsInfo` on 3 cards).
+
+- `factor` (2500, 1700, 1550) and `flags` (1, 1, 1) are present, so `EXTRA_KEYS` in `test_fake_shapes.py` is correct.
+- Real keys = README keys + `factor`, `flags`, `nextReviews`. The fake returns every real key except
+  `nextReviews`. No key in the fake is missing from the real response, and the shared keys have the same types.
+- `nextReviews` is not modelled in the fake. The legacy commands don't use it, so it is left for S1-08.
+
+## Decisions (Dzianis Sheka, 2026-10-24)
+
+- `list-red-flags` order: keep ascending by due (most urgent first). The S1-07 AC wording and the docstring should say "asc".
+- Keep the README-derived `readme_v6.json` as the reference shapes until S1-08 records real ones.
