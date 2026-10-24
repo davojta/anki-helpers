@@ -2,7 +2,9 @@
 
 Date: 2026-10-24 · Branch `ccr-dfc42be6-qs9tj1` @ `b054eac` · macOS, Python 3.14.4, zsh
 
-Run the "Manual" steps from the PR body in an interactive shell, using the default `fixtures/basic.json` seed.
+Tester: Dzianis Sheka (manual, human). The tester followed the "Manual" steps in the PR #11 body exactly,
+in an interactive zsh session on a fresh checkout after `uv sync`, with the default `fixtures/basic.json` seed.
+The table below records the observed output of each step.
 
 | Step | Expected | Result |
 |---|---|---|
@@ -20,7 +22,9 @@ Run the "Manual" steps from the PR body in an interactive shell, using the defau
    whole job process group, so both `uv` and the Python child get it. `uv` then forwards the signal to the
    child too. The likely result is a second `KeyboardInterrupt` raised by the `stop` handler while the
    `finally:` block in `cli.py` `serve` is running. That aborts the dump, and Click reports `Aborted!`.
-   SIGTERM sent to the `uv` PID alone (non-interactive shell) works: exit 0, `State written to …`.
+   Follow-up check by Claude Code, separate from the manual run: SIGTERM sent to the `uv` PID alone
+   (non-interactive shell) works: exit 0, `State written to …`. The process-group case could not be
+   reproduced in its sandbox, so the root cause above is unconfirmed.
    Possible fix: on the first signal, reset the handlers to `SIG_IGN`, or set a flag and call
    `httpd.shutdown()` instead of raising. Add an e2e test that sends the signal to the process group.
 2. **Cloze note shows twice in `list-red-flags`.** Both cards (c1, c2) render as the same raw
