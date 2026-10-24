@@ -32,9 +32,11 @@ def invoke(url: str, action: str, **params: Any) -> Any:
 def record(url: str) -> dict[str, Any]:
     """Pick real ids from the collection and record each read-only action."""
     # Tagged cards, so tag lists record their item shape instead of [].
-    cards: list[int] = invoke(url, "findCards", query="flag:1 -tag:none")[:2]
+    query = "flag:1 -tag:none"
+    cards: list[int] = invoke(url, "findCards", query=query)[:2]
     if len(cards) < 2:
-        cards = invoke(url, "findCards", query="-tag:none")[:2]
+        query = "-tag:none"
+        cards = invoke(url, "findCards", query=query)[:2]
     suspended: list[int] = invoke(url, "findCards", query="is:suspended")[:1]
     note: dict[str, Any] = invoke(
         url, "notesInfo", notes=[invoke(url, "cardsToNotes", cards=cards[:1])[0]]
@@ -48,6 +50,8 @@ def record(url: str) -> dict[str, Any]:
     }
     new = {**dup, "fields": {first: "anki-helpers S1-08 probe, never added"}}
     media: list[str] = invoke(url, "getMediaFilesNames", pattern="*")[:KEEP]
+    if not media:
+        raise RuntimeError("no media files; cannot record retrieveMediaFile")
 
     params: dict[str, dict[str, Any]] = {
         "version": {},
@@ -58,8 +62,8 @@ def record(url: str) -> dict[str, Any]:
         "modelNamesAndIds": {},
         "modelFieldNames": {"modelName": note["modelName"]},
         "getTags": {},
-        "findCards": {"query": "flag:1"},
-        "findNotes": {"query": "flag:1"},
+        "findCards": {"query": query},
+        "findNotes": {"query": query},
         "cardsInfo": {"cards": cards},
         "cardsModTime": {"cards": cards},
         "cardsToNotes": {"cards": cards},
@@ -73,9 +77,7 @@ def record(url: str) -> dict[str, Any]:
         "canAddNotes": {"notes": [new]},
         "canAddNotesWithErrorDetail": {"notes": [dup, new]},
         "getMediaFilesNames": {"pattern": "*"},
-        "retrieveMediaFile": {"filename": media[0]}
-        if media
-        else {"filename": "_missing"},
+        "retrieveMediaFile": {"filename": media[0]},
         "multi": {
             "actions": [{"action": "deckNames"}, {"action": "deckNames", "version": 6}]
         },
