@@ -152,6 +152,36 @@ def test_get_examples_for_red_flags_cards(
     assert "der Hund" in bodies[0]["messages"][1]["content"]
 
 
+def test_generate_examples_for_word(
+    run_cli: RunCli,
+    openai_stub: tuple[str, list[dict[str, Any]]],
+    tmp_path: Path,
+) -> None:
+    """The installed CLI sends the words with the default topics; reply saved."""
+    base_url, bodies = openai_stub
+    words = tmp_path / "words.md"
+    words.write_text("talo\n")
+    result = run_cli(
+        "generate-examples-for-word",
+        str(words),
+        url="http://unused",
+        env={"API_KEY": "test-key", "OPENAI_BASE_URL": base_url},
+    )
+    assert result.returncode == 0, result.stderr
+    assert (tmp_path / "examples-table.md").read_text() == "STUB REPLY"
+    prompt = bodies[0]["messages"][1]["content"]
+    assert "theme of cycling as a hobby in finland" in prompt
+    assert prompt.endswith("talo\n")
+
+
+def test_query_anki_list(fake: FakeServer, run_cli: RunCli) -> None:
+    """The installed query-anki list command sorts the fake's red cards by due."""
+    result = run_cli("query-anki", "list", "--filter", "flag=red", url=fake.url)
+    assert result.returncode == 0, result.stderr
+    lines = [ln for ln in result.stdout.splitlines() if ln.startswith("  • ")]
+    assert lines[:2] == ["  • der Hund", "  • die Katze"]
+
+
 def test_state_seed_reset(fake: FakeServer) -> None:
     """/_seed replaces the collection, /_reset restores the startup seed."""
     note = {"deck": "Only", "model": "Basic", "fields": {"Front": "x", "Back": "y"}}

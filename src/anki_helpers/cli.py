@@ -15,7 +15,25 @@ from openai import OpenAI
 
 from . import fake_anki
 from .anki_connect import AnkiConnect, AnkiConnectError
+from .prompts import examples_for_word
 from .prompts.examples_for_red_cards import get_prompt
+
+SYSTEM_MESSAGE = "You are a helpful assistant for language learning."
+ANKI_HINT = "Make sure Anki is running with AnkiConnect plugin installed."
+FLAGS = {
+    "none": 0,
+    "red": 1,
+    "orange": 2,
+    "green": 3,
+    "blue": 4,
+    "pink": 5,
+    "turquoise": 6,
+    "purple": 7,
+}
+FLAG_NAMES = {n: name for name, n in FLAGS.items()}
+# Anki queues whose ``due`` is a day number (review, day-learn relearning).
+DAY_QUEUES = (2, 3)
+LEARNING_QUEUE = 1
 
 
 # Manually load .env file
@@ -247,22 +265,7 @@ def get_examples_for_red_flags_cards(output_dir: str, limit: int | None) -> None
             f.write(f"USER MESSAGE:\n{prompt}")
         click.echo(f"- Full prompt saved to: {debug_prompt_path}")
 
-        # Call OpenAI API
-        client = OpenAI(api_key=api_key)
-        # create a system prompt as a variable and pass it here
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a helpful assistant for language learning.",
-                },
-                {"role": "user", "content": prompt},
-            ],
-        )
-
-        # Get response content
-        response_content = response.choices[0].message.content
+        response_content = _complete(api_key, model, SYSTEM_MESSAGE, prompt)
 
         # Output to console
         click.echo("\nOpenAI Response:")
@@ -271,7 +274,7 @@ def get_examples_for_red_flags_cards(output_dir: str, limit: int | None) -> None
         # Save to results.md
         results_file_path = output_path / "results.md"
         with open(results_file_path, "w") as f:
-            f.write(cast("str", response_content))
+            f.write(response_content)
 
         click.echo(f"\nResults saved to {results_file_path}")
 
@@ -281,6 +284,160 @@ def get_examples_for_red_flags_cards(output_dir: str, limit: int | None) -> None
         click.echo(msg, err=True)
     except Exception as e:
         click.echo(f"Error: {e!s}", err=True)
+
+
+def _complete(api_key: str, model: str, system: str, prompt: str) -> str:
+    """Send one chat completion to OpenAI and return the reply text."""
+    response = OpenAI(api_key=api_key).chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": prompt},
+        ],
+    )
+    return response.choices[0].message.content or ""
+
+
+@cli.command()
+@click.argument("words-file", type=click.Path(exists=True, dir_okay=False))
+@click.option(
+    "--topics",
+    default=",".join(examples_for_word.DEFAULT_TOPICS),
+    show_default=True,
+    help="Comma-separated themes; one example sentence per theme.",
+)
+@click.option(
+    "--output",
+    type=click.Path(dir_okay=False),
+    help="Output file (default: examples-table.md next to WORDS_FILE).",
+)
+def generate_examples_for_word(
+    words_file: str, topics: str, output: str | None
+) -> None:
+    """Generate an examples table for the words in WORDS_FILE (one per line)."""
+    api_key = os.getenv("API_KEY")
+    if not api_key:
+        click.echo("Error: API_KEY not found in .env file", err=True)
+        return
+
+    words_path = Path(words_file)
+    words_content = words_path.read_text(encoding="utf-8")
+    if not words_content.strip():
+        click.echo("Error: Words file is empty", err=True)
+        return
+
+    topic_list = tuple(t.strip() for t in topics.split(",") if t.strip())
+    prompt = examples_for_word.get_prompt(words_content, topic_list)
+    model = "gpt-4o"
+    click.echo(f"Asking {model} for examples ({', '.join(topic_list)})")
+
+    try:
+        reply = _complete(
+            api_key,
+            model,
+            SYSTEM_MESSAGE + " Always format your response as a markdown table.",
+            prompt,
+        )
+    except Exception as e:
+        click.echo(f"Error: {e!s}", err=True)
+        return
+    if not reply:
+        click.echo("Error: Empty response from OpenAI", err=True)
+        return
+
+    click.echo(reply)
+    output_path = Path(output) if output else words_path.parent / "examples-table.md"
+    output_path.write_text(reply, encoding="utf-8")
+    click.echo(f"\nResults saved to {output_path}")
+
+
+def _parse_filters(ctx: click.Context, param: click.Parameter, value: str) -> str:
+    """Turn ``flag=red:due_date=<10d`` into an Anki search query."""
+    parts: list[str] = []
+    for item in value.split(":"):
+        key, _, arg = item.partition("=")
+        if key == "flag" and arg in FLAGS:
+            parts.append(f"flag:{FLAGS[arg]}")
+        elif key == "due_date" and (m := re.fullmatch(r"(<=|>=|<|>|=)(-?\d+)d", arg)):
+            parts.append(f"prop:due{m[1]}{m[2]}")
+        elif key == "flag":
+            raise click.BadParameter(f"flag must be one of: {', '.join(FLAGS)}")
+        elif key == "due_date":
+            raise click.BadParameter(f"due_date must look like <10d, got {arg!r}")
+        else:
+            raise click.BadParameter(f"unknown filter {item!r}; use flag= or due_date=")
+    return " ".join(parts)
+
+
+def _due_in_days(card: dict[str, Any], today: int | None, now: float) -> int | None:
+    """Days from today until the card is due; None for new or suspended cards."""
+    if card["queue"] in DAY_QUEUES and today is not None:
+        return int(card["due"]) - today
+    if card["queue"] == LEARNING_QUEUE:
+        return int((card["due"] - now) // 86400)
+    return None
+
+
+@cli.group()
+def query_anki() -> None:
+    """Query Anki directly via AnkiConnect."""
+
+
+@query_anki.command("list")
+@click.option(
+    "--filter",
+    "query",
+    required=True,
+    callback=_parse_filters,
+    help="key=value pairs joined by ':', e.g. flag=red:due_date=<10d",
+)
+@click.option(
+    "--sort", default="due", show_default=True, type=click.Choice(["due", "interval"])
+)
+@click.option("--limit", default=20, show_default=True, help="Max cards shown.")
+def query_anki_list(query: str, sort: str, limit: int) -> None:
+    """List cards matching --filter, most urgent (or shortest interval) first."""
+    try:
+        anki = AnkiConnect()
+        cards = anki.cards_info(anki.find_cards(query))
+        if not cards:
+            click.echo("No cards found.")
+            return
+        notes = {
+            n["noteId"]: n for n in anki.notes_info(sorted({c["note"] for c in cards}))
+        }
+        anchor = next((c for c in cards if c["queue"] in DAY_QUEUES), None)
+        today = anki.today(anchor["cardId"], anchor["due"]) if anchor else None
+    except AnkiConnectError as e:
+        click.echo(f"Error: {e!s}", err=True)
+        click.echo(ANKI_HINT, err=True)
+        return
+
+    now = time.time()
+    due = {c["cardId"]: _due_in_days(c, today, now) for c in cards}
+    if sort == "due":
+        # Cards without a due day (new, suspended) go last.
+        cards.sort(key=lambda c: (due[c["cardId"]] is None, due[c["cardId"]] or 0))
+    else:
+        cards.sort(key=lambda c: c["interval"])
+
+    click.echo(
+        f"Cards matching {query!r} (by {sort}, showing {min(limit, len(cards))} of {len(cards)}):"
+    )
+    for card in cards[:limit]:
+        note = notes.get(card["note"], {})
+        fields: dict[str, dict[str, str]] = note.get("fields", {})
+        first = next(iter(fields.values()), None)
+        front = clean_html_content(first["value"]) if first else ""
+        days = due[card["cardId"]]
+        click.echo(f"  • {front}")
+        click.echo(
+            f"    Deck: {card['deckName']} | Due: {'-' if days is None else f'{days:+d}d'}"
+            f" | Interval: {card['interval']}d"
+            f" | Flag: {FLAG_NAMES.get(card['flags'] & 0b111, 'none')}"
+        )
+        if note.get("tags"):
+            click.echo(f"    Tags: {', '.join(note['tags'])}")
 
 
 def _load_seed(seed: str | None, empty: bool) -> dict[str, Any]:
