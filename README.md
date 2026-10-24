@@ -21,7 +21,21 @@ uv run anki-helpers list-deck
 uv run anki-helpers list-red-flags [--limit N]
 ```
 
-This command will list notes in Anki that have been marked with a red flag (using the 'marked' tag in Anki). The notes are sorted by their due date in descending order, making it easy to see which cards need to be reviewed first. By default, only the top 5 cards are displayed, but you can change this using the `--limit` parameter.
+This command lists notes in Anki that have a red-flagged card (`flag:1`). They are sorted by due date in ascending order, most urgent first, so you can see which cards need review first. By default, only the top 5 cards are displayed, but you can change this using the `--limit` parameter.
+
+### Query cards by flag and due date
+```bash
+uv run anki-helpers query-anki list --filter flag=red:due_date=<10d [--sort due|interval] [--limit N]
+```
+
+`--filter` takes `key=value` pairs joined by `:`. `flag` is one of none, red, orange, green, blue, pink, turquoise, purple. `due_date` is `<Nd`, `<=Nd`, `=Nd`, `>=Nd` or `>Nd`, measured in days from today (`prop:due`). Cards are listed with their exact due day relative to today. `--sort due` puts the most overdue first, with new and suspended cards last. The default limit is 20.
+
+### Generate example sentences for a word list
+```bash
+uv run anki-helpers generate-examples-for-word WORDS_FILE [--topics "AI,sauna"] [--output FILE]
+```
+
+Sends the words in `WORDS_FILE` (one per line) to OpenAI. It asks for one short sentence plus one sentence per topic for each word, as a markdown table, and saves the result to `examples-table.md` next to the file. Requires `API_KEY`.
 
 ### Generate example sentences for red flag cards
 ```bash
