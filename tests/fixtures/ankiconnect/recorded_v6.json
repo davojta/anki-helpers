@@ -1,0 +1,306 @@
+{
+  "_source": "Responses recorded from a real Anki + AnkiConnect (API v6) by scripts/record_ankiconnect.py. Read-only actions only; id/file lists cut to 5, media base64 to 64 chars.",
+  "version": 6,
+  "requestPermission": {
+    "permission": "granted",
+    "requireApikey": false,
+    "version": 6
+  },
+  "deckNames": [
+    "[W/ audio] Finnish - English Core 900 (Spoken Language)",
+    "Basic Vocabulary Eng-Fin",
+    "Custom Study Session",
+    "Default",
+    "Finnish Grammar",
+    "Jokapäiväistä sanastoa",
+    "Opettajan sanastoa",
+    "Verbit"
+  ],
+  "deckNamesAndIds": {
+    "[W/ audio] Finnish - English Core 900 (Spoken Language)": 1696406479400,
+    "Basic Vocabulary Eng-Fin": 1737809580374,
+    "Custom Study Session": 1725818030246,
+    "Default": 1,
+    "Finnish Grammar": 1744553605317,
+    "Jokapäiväistä sanastoa": 1751700942998,
+    "Opettajan sanastoa": 1733646226563,
+    "Verbit": 1726941292074
+  },
+  "modelNames": [
+    "Basic",
+    "Basic (and reversed card)",
+    "Basic (and reversed card)+",
+    "Basic (optional reversed card)",
+    "Basic (type in the answer)",
+    "LaajennettuPerus",
+    "Perusmalli",
+    "Spoken deck-30feb",
+    "Top 10000 Finnish root words"
+  ],
+  "modelNamesAndIds": {
+    "Basic": 1695379940870,
+    "Basic (and reversed card)": 1695379940871,
+    "Basic (and reversed card)+": 1515790105653,
+    "Basic (optional reversed card)": 1695379940872,
+    "Basic (type in the answer)": 1695379940873,
+    "LaajennettuPerus": 1702121859696,
+    "Perusmalli": 1710872735265,
+    "Spoken deck-30feb": 1517323427776,
+    "Top 10000 Finnish root words": 1655821168626
+  },
+  "modelFieldNames": [
+    "Etupuoli",
+    "Kääntöpuoli",
+    "Finlause",
+    "Enlause"
+  ],
+  "getTags": [
+    "-",
+    "aamunkoitto,",
+    "alkuperäinen,",
+    "auringon",
+    "eläkeapu",
+    "eläketulo,",
+    "ensimäinen",
+    "kaveruus,",
+    "keho,",
+    "keskiyö,",
+    "kolmas",
+    "leech",
+    "marked",
+    "meno",
+    "nousu",
+    "organismi",
+    "puoliväli",
+    "päivän",
+    "seuraava,",
+    "Synonyymit",
+    "toinen",
+    "verbi",
+    "ystävällisyys",
+    "yön"
+  ],
+  "findCards": [
+    1517323757459,
+    1517323757463,
+    1517323757615,
+    1517323757665,
+    1517323757809
+  ],
+  "findNotes": [
+    1517323756587,
+    1517323756591,
+    1517323756743,
+    1517323756793,
+    1517323756937
+  ],
+  "cardsInfo": [
+    {
+      "cardId": 1517323757615,
+      "fieldOrder": 0,
+      "ord": 0,
+      "factor": 1550,
+      "interval": 33,
+      "note": 1517323756743,
+      "type": 2,
+      "queue": 2,
+      "due": 716,
+      "reps": 65,
+      "lapses": 14,
+      "left": 0,
+      "mod": 1754365868,
+      "flags": 1,
+      "fields": {
+        "Etupuoli": {
+          "value": "kohta (<strong>*kokta-&gt;&nbsp;</strong>kopta (place)) |&nbsp;<span style=\"color: rgb(55, 65, 81);\">pian,&nbsp;</span><span style=\"color: rgb(55, 65, 81);\">lähihetkinä</span>&nbsp;| se olis kohta tulos [sound:google-fd1c0304-606c89b1-46b94062-51272f35-520591e9.mp3]",
+          "order": 0
+        },
+        "Kääntöpuoli": {
+          "value": "soon,&nbsp;in a&nbsp;moment,&nbsp;presently",
+          "order": 1
+        },
+        "Finlause": {
+          "value": "Seppo sano ett se olis kohta tulos. [sound:google-9c9d3f26-8b0eea32-88ab71bd-12f38883-1ba6f195.mp3]",
+          "order": 2
+        },
+        "Enlause": {
+          "value": "Seppo said that he is coming soon.",
+          "order": 3
+        }
+      },
+      "modelName": "Spoken deck-30feb",
+      "css": ".card {\n font-family: arial;\n font-size: 20px;\n text-align: center;\n color: black;\n background-color: white;\n}\n",
+      "deckName": "[W/ audio] Finnish - English Core 900 (Spoken Language)",
+      "question": "<style>.card {\n font-family: arial;\n font-size: 20px;\n text-align: center;\n color: black;\n background-color: white;\n}\n</style>kohta (<strong>*kokta-&gt;&nbsp;</strong>kopta (place)) |&nbsp;<span style=\"color: rgb(55, 65, 81);\">pian,&nbsp;</span><span style=\"color: rgb(55, 65, 81);\">lähihetkinä</span>&nbsp;| se olis kohta tulos [anki:play:q:0]\n\n\n\n",
+      "answer": "<style>.card {\n font-family: arial;\n font-size: 20px;\n text-align: center;\n color: black;\n background-color: white;\n}\n</style>kohta (<strong>*kokta-&gt;&nbsp;</strong>kopta (place)) |&nbsp;<span style=\"color: rgb(55, 65, 81);\">pian,&nbsp;</span><span style=\"color: rgb(55, 65, 81);\">lähihetkinä</span>&nbsp;| se olis kohta tulos [anki:play:q:0]\n\n\n\n\n\n<hr id=answer>\n\nsoon,&nbsp;in a&nbsp;moment,&nbsp;presently\n<div style='font-family: Arial; font-size: 20px;'>---</div>\n<div style='font-family: Arial; font-size: 20px;'></div>\n<div style='font-family: Arial; font-size: 20px;'>Seppo sano ett se olis kohta tulos. [anki:play:a:0]</div>\n\n<div style='font-family: Arial; font-size: 20px;'>Seppo said that he is coming soon.</div>\n",
+      "nextReviews": [
+        "<⁨10⁩m",
+        "⁨1.4⁩mo",
+        "⁨1.1⁩y",
+        "⁨2.6⁩y"
+      ]
+    },
+    {
+      "cardId": 1517323757947,
+      "fieldOrder": 0,
+      "ord": 0,
+      "factor": 1650,
+      "interval": 27,
+      "note": 1517323757075,
+      "type": 2,
+      "queue": 2,
+      "due": 710,
+      "reps": 64,
+      "lapses": 14,
+      "left": 0,
+      "mod": 1754370312,
+      "flags": 1,
+      "fields": {
+        "Etupuoli": {
+          "value": "selvitä | Tekoälysovellukset voivat auttaa ihmisiä <b>selviytymään</b> stressistä ja parantamaan hyvinvointiaan. [sound:google-ba5e7cb6-9c6ec5e2-be01f2b3-9be02af9-3de6f78a.mp3]",
+          "order": 0
+        },
+        "Kääntöpuoli": {
+          "value": "survive",
+          "order": 1
+        },
+        "Finlause": {
+          "value": "<div>Tekoälysovellukset voivat auttaa ihmisiä selviytymään stressistä ja parantamaan hyvinvointiaan.</div> [sound:googletts-effa3957-f36fbe95-7e5371aa-f1bd1061-a44c904c.mp3]",
+          "order": 2
+        },
+        "Enlause": {
+          "value": "<div>AI applications can help people cope with stress and improve their wellbeing.</div>",
+          "order": 3
+        }
+      },
+      "modelName": "Spoken deck-30feb",
+      "css": ".card {\n font-family: arial;\n font-size: 20px;\n text-align: center;\n color: black;\n background-color: white;\n}\n",
+      "deckName": "[W/ audio] Finnish - English Core 900 (Spoken Language)",
+      "question": "<style>.card {\n font-family: arial;\n font-size: 20px;\n text-align: center;\n color: black;\n background-color: white;\n}\n</style>selvitä | Tekoälysovellukset voivat auttaa ihmisiä <b>selviytymään</b> stressistä ja parantamaan hyvinvointiaan. [anki:play:q:0]\n\n\n\n",
+      "answer": "<style>.card {\n font-family: arial;\n font-size: 20px;\n text-align: center;\n color: black;\n background-color: white;\n}\n</style>selvitä | Tekoälysovellukset voivat auttaa ihmisiä <b>selviytymään</b> stressistä ja parantamaan hyvinvointiaan. [anki:play:q:0]\n\n\n\n\n\n<hr id=answer>\n\nsurvive\n<div style='font-family: Arial; font-size: 20px;'>---</div>\n<div style='font-family: Arial; font-size: 20px;'></div>\n<div style='font-family: Arial; font-size: 20px;'><div>Tekoälysovellukset voivat auttaa ihmisiä selviytymään stressistä ja parantamaan hyvinvointiaan.</div> [anki:play:a:0]</div>\n\n<div style='font-family: Arial; font-size: 20px;'><div>AI applications can help people cope with stress and improve their wellbeing.</div></div>\n",
+      "nextReviews": [
+        "<⁨10⁩m",
+        "⁨29⁩d",
+        "⁨1⁩y",
+        "⁨2.5⁩y"
+      ]
+    }
+  ],
+  "cardsModTime": [
+    {
+      "cardId": 1517323757615,
+      "mod": 1754365868
+    },
+    {
+      "cardId": 1517323757947,
+      "mod": 1754370312
+    }
+  ],
+  "cardsToNotes": [
+    1517323756743,
+    1517323757075
+  ],
+  "notesInfo": [
+    {
+      "noteId": 1517323756743,
+      "profile": "User 1",
+      "tags": [
+        "leech"
+      ],
+      "fields": {
+        "Etupuoli": {
+          "value": "kohta (<strong>*kokta-&gt;&nbsp;</strong>kopta (place)) |&nbsp;<span style=\"color: rgb(55, 65, 81);\">pian,&nbsp;</span><span style=\"color: rgb(55, 65, 81);\">lähihetkinä</span>&nbsp;| se olis kohta tulos [sound:google-fd1c0304-606c89b1-46b94062-51272f35-520591e9.mp3]",
+          "order": 0
+        },
+        "Kääntöpuoli": {
+          "value": "soon,&nbsp;in a&nbsp;moment,&nbsp;presently",
+          "order": 1
+        },
+        "Finlause": {
+          "value": "Seppo sano ett se olis kohta tulos. [sound:google-9c9d3f26-8b0eea32-88ab71bd-12f38883-1ba6f195.mp3]",
+          "order": 2
+        },
+        "Enlause": {
+          "value": "Seppo said that he is coming soon.",
+          "order": 3
+        }
+      },
+      "modelName": "Spoken deck-30feb",
+      "mod": 1751795092,
+      "cards": [
+        1517323757615
+      ]
+    }
+  ],
+  "notesModTime": [
+    {
+      "noteId": 1517323756743,
+      "mod": 1751795092
+    }
+  ],
+  "getNoteTags": [
+    "leech"
+  ],
+  "getIntervals": [
+    33,
+    27
+  ],
+  "getEaseFactors": [
+    1550,
+    1650
+  ],
+  "areSuspended": [
+    false,
+    true,
+    null
+  ],
+  "areDue": [
+    true,
+    true
+  ],
+  "canAddNotes": [
+    true
+  ],
+  "canAddNotesWithErrorDetail": [
+    {
+      "canAdd": false,
+      "error": "cannot create note because it is a duplicate"
+    },
+    {
+      "canAdd": true
+    }
+  ],
+  "getMediaFilesNames": [
+    " Niinkö luulet.mp3",
+    " Se on iso ja kaunis asunto.mp3",
+    "01.+Onko+sinulla+sopiva+lahja+mielessä.mp3",
+    "04.+Äiti+pitää+kovasti+suomalaisesta+muotoilusta.mp3",
+    "05.+Hei,+katso,+mitä+ihania+kattiloita.mp3"
+  ],
+  "retrieveMediaFile": "////////////////////////////////////////////////////////i1rWt82t",
+  "multi": [
+    [
+      "[W/ audio] Finnish - English Core 900 (Spoken Language)",
+      "Basic Vocabulary Eng-Fin",
+      "Custom Study Session",
+      "Default",
+      "Finnish Grammar",
+      "Jokapäiväistä sanastoa",
+      "Opettajan sanastoa",
+      "Verbit"
+    ],
+    {
+      "result": [
+        "[W/ audio] Finnish - English Core 900 (Spoken Language)",
+        "Basic Vocabulary Eng-Fin",
+        "Custom Study Session",
+        "Default",
+        "Finnish Grammar",
+        "Jokapäiväistä sanastoa",
+        "Opettajan sanastoa",
+        "Verbit"
+      ],
+      "error": null
+    }
+  ]
+}

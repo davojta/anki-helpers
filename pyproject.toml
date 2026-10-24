@@ -45,7 +45,7 @@ pydocstyle.convention = "google"
 exclude = ["*.md"]  # keep hand-aligned snippets in docs
 
 [tool.pyright]
-include = ["src", "tests"]
+include = ["src", "tests", "scripts"]
 strict = ["src"]
 typeCheckingMode = "standard"
 pythonVersion = "3.14"
