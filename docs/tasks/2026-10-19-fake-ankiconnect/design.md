@@ -32,7 +32,7 @@ anki-helpers mock query Q → FakeAnki.handle(findNotes|findCards) → search.co
 
 | Issue | AC | Covered by |
 |---|---|---|
-| S1-03 | shape-identical to recorded fixtures | `tests/unit/test_fake_shapes.py` vs `tests/fixtures/ankiconnect/readme_v6.json` (README examples, ⚠️ not recorded: S1-08) |
+| S1-03 | shape-identical to recorded fixtures | `tests/unit/test_fake_shapes.py`: 25 read-only actions vs `recorded_v6.json` (recorded from real Anki by `record.py`); 6 write actions vs `readme_v6.json` (README examples) |
 | S1-04 | duplicate add errors; `mod` bumps via injected clock | `test_fake_actions.py::test_add_note_errors`, `::test_update_bumps_mod` |
 | S1-05 | media base64 round-trip; missing → `false` | `test_fake_actions.py::test_media` |
 | S1-06 | e2e fixture on random port; legacy CLI works; fault injection | `tests/e2e/test_fake_server_e2e.py`; `Fault.noop` = "note open in browser" |
@@ -41,5 +41,5 @@ anki-helpers mock query Q → FakeAnki.handle(findNotes|findCards) → search.co
 ## Not done (grand plan S1)
 
 - S1-01/02 `AnkiPort` + httpx client; so S1-07 runs the legacy `requests` client against the fake instead of porting it onto `AnkiPort`.
-- S1-08 contract suite vs real headless Anki; reference shapes come from the README until then.
+- S1-08 contract suite vs real headless Anki. Read-only shapes are already recorded (`record.py`); write actions still use README shapes until S1-08 records them against a throwaway collection.
 - `list-red-flags` order: S1-07 says "due desc"; the command sorts by `dueQuery` ascending (overdue first). Pinned as-is in e2e; decided 2026-10-24: keep ascending.

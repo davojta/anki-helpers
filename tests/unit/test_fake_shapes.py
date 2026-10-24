@@ -1,7 +1,8 @@
-"""Fake responses have the same JSON shape as AnkiConnect's documented ones.
+"""Fake responses have the same JSON shape as real AnkiConnect ones.
 
-The reference file is hand-copied from the AnkiConnect README; S1-08 replaces
-it with responses recorded from a real headless Anki.
+Read-only actions are checked against ``recorded_v6.json`` (recorded from a
+real Anki by ``record.py``). Write actions are not recorded, so they fall back
+to ``readme_v6.json``, which is hand-copied from the AnkiConnect README.
 """
 
 import json
@@ -12,16 +13,17 @@ import pytest
 
 from anki_helpers.fake_anki import FakeAnki, load_state, sample_seed
 
-REFERENCE = json.loads(
-    (Path(__file__).parents[1] / "fixtures/ankiconnect/readme_v6.json").read_text()
-)
+FIXTURES = Path(__file__).parents[1] / "fixtures/ankiconnect"
+REFERENCE = {
+    **json.loads((FIXTURES / "readme_v6.json").read_text()),
+    **json.loads((FIXTURES / "recorded_v6.json").read_text()),
+}
 
 # Dicts keyed by data (names), not by schema: compare value shapes only.
 MAPS = {"fields", "deckNamesAndIds", "modelNamesAndIds"}
 
-# Keys the fake returns beyond the README example. Newer add-on versions return
-# them too (⚠️ confirm with S1-08 recordings).
-EXTRA_KEYS = {"cardsInfo": {"factor", "flags"}}
+# Keys real Anki returns that the fake does not model (Anki's scheduler text).
+UNMODELLED = {"cardsInfo": {"nextReviews"}}
 
 NEW = {"deckName": "Spanish", "modelName": "Basic", "fields": {"Front": "nuevo"}}
 DUP = {"deckName": "Spanish", "modelName": "Basic", "fields": {"Front": "el perro"}}
@@ -72,12 +74,12 @@ def shape(value: Any, key: str = "") -> Any:
     return type(value).__name__
 
 
-def strip_extra(action: str, value: Any) -> Any:
-    """Drop ``EXTRA_KEYS`` from record dicts in a result."""
-    extra = EXTRA_KEYS.get(action, set())
+def strip_unmodelled(action: str, value: Any) -> Any:
+    """Drop ``UNMODELLED`` keys from record dicts in a reference result."""
+    skip = UNMODELLED.get(action, set())
     if isinstance(value, list):
         return [
-            {k: v for k, v in item.items() if k not in extra}
+            {k: v for k, v in item.items() if k not in skip}
             if isinstance(item, dict)
             else item
             for item in value
@@ -92,19 +94,11 @@ def anki() -> FakeAnki:
 
 
 @pytest.mark.parametrize("action", sorted(k for k in REFERENCE if k != "_source"))
-def test_shape_matches_readme(anki: FakeAnki, action: str) -> None:
-    """Each documented action answers with the documented JSON shape."""
+def test_shape_matches_reference(anki: FakeAnki, action: str) -> None:
+    """Each action answers with the JSON shape real AnkiConnect returns."""
     reply = anki.handle(
         {"action": action, "version": 6, "params": PARAMS.get(action, {})}
     )
     assert reply["error"] is None, reply["error"]
-    fake = strip_extra(action, reply["result"])
-    assert shape(fake, action) == shape(REFERENCE[action], action)
-
-
-def test_extra_keys_are_present(anki: FakeAnki) -> None:
-    """EXTRA_KEYS stays accurate: the fake really returns those keys."""
-    info = anki.handle(
-        {"action": "cardsInfo", "version": 6, "params": PARAMS["cardsInfo"]}
-    )
-    assert EXTRA_KEYS["cardsInfo"] <= set(info["result"][0])
+    expected = strip_unmodelled(action, REFERENCE[action])
+    assert shape(reply["result"], action) == shape(expected, action)

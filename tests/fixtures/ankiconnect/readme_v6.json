@@ -1,5 +1,5 @@
 {
-  "_source": "Response examples from the AnkiConnect README (API v6). Hand-copied, not recorded; S1-08 replaces them with responses recorded from a real headless Anki.",
+  "_source": "Response examples from the AnkiConnect README (API v6). Hand-copied, not recorded. Overridden by recorded_v6.json where recorded; still the reference for write actions until S1-08 records them.",
   "version": 6,
   "requestPermission": {"permission": "granted", "requireApikey": false, "version": 6},
   "deckNames": ["Default"],
