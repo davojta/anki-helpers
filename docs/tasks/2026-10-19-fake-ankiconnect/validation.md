@@ -31,7 +31,7 @@ The table below records the observed output of each step.
    `{{c1::Hola}}, ¿cómo {{c2::estás::verb}}?` text. The output is correct per card, but hard to read.
    Rendering the cloze for each card, or showing the card ordinal, would help. This feeds the open
    "readability with the cloze note" item.
-3. Sort order is ascending by due, as the PR describes. The decision on the S1-07 AC is still open.
+3. Sort order is ascending by due, as the PR describes. Decided: keep it (see Decisions below).
 
 ## `cardsInfo` extras vs real Anki
 

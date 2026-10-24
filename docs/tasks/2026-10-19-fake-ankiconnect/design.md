@@ -42,4 +42,4 @@ anki-helpers mock query Q → FakeAnki.handle(findNotes|findCards) → search.co
 
 - S1-01/02 `AnkiPort` + httpx client; so S1-07 runs the legacy `requests` client against the fake instead of porting it onto `AnkiPort`.
 - S1-08 contract suite vs real headless Anki; reference shapes come from the README until then.
-- `list-red-flags` order: S1-07 says "due desc"; the command sorts by `dueQuery` ascending (overdue first). Pinned as-is in e2e; ⚠️ needs a decision.
+- `list-red-flags` order: S1-07 says "due desc"; the command sorts by `dueQuery` ascending (overdue first). Pinned as-is in e2e; decided 2026-10-24: keep ascending.

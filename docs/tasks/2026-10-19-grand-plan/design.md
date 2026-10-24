@@ -21,7 +21,7 @@
 - Tooling: Poetry. Tests use `unittest` (`poetry run python -m unittest discover tests`; known test `tests/cli_test.py::test_version`). pytest is described as optional.
 - Features:
   - `list-deck`
-  - `list-red-flags [--limit N]`: notes tagged `marked`, sorted by due date descending, default 5.\[1\]
+  - `list-red-flags [--limit N]`: notes tagged `marked`, sorted by due date ascending, default 5.\[1\]
   - `get-examples-for-red-flags-cards [--limit N] OUTPUT_DIR`: writes `input-words.md`, calls OpenAI GPT-4o, saves `results.md`. Needs `openai`, `python-dotenv`, and `API_KEY` in `.env`.\[1\]
 - Runtime requirement: "Anki must be running" with AnkiConnect installed.\[1\]
 - **Gaps:**
@@ -425,7 +425,7 @@ Issue format: **ID · title** — *AC* (acceptance criteria). All issues get the
   - S1-04 · Fake note actions (`addNote(s), canAddNotes(WithErrorDetail), findNotes` (subset query: `deck:`, `tag:`, `nid:`, `"field:..."`), `notesInfo` incl. `mod`, `notesModTime`, `updateNote(Fields)`, `addTags/removeTags`, `deleteNotes`, `findCards/cardsInfo/suspend`) — *AC: duplicate add errors; `mod` bumps on change via injected clock.*
   - S1-05 · Fake media + `sync` no-op + `multi` — *AC: store/retrieve base64 round-trip; missing → `false`.*
   - S1-06 · Fake HTTP server + `anki-helpers mock serve` + `/_state`, `/_reset`, `/_seed`, fault injection — *AC: e2e fixture starts on random port; legacy CLI works against it.*
-  - S1-07 · Port legacy commands onto `AnkiPort` — *AC: `list-red-flags` sorted by due desc, default 5; e2e against fake.*
+  - S1-07 · Port legacy commands onto `AnkiPort` — *AC: `list-red-flags` sorted by due asc (most urgent first), default 5; e2e against fake.*
   - S1-08 · Contract suite + `real-anki.yml` + `record_contract.py` — *AC: same scenarios pass on fake; workflow_dispatch run documented (image pinned).*
 
 ### Stage 2 — Markdown data model (goal: lossless, validated vault model) — depends S0; parallel with S1
