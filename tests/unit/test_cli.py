@@ -102,3 +102,64 @@ def test_get_examples_for_red_flags_cards_limit(
     content = (out / "input-words.md").read_text()
     assert "test word 2" in content
     assert "test word 3" not in content
+
+
+def test_generate_examples_for_word(tmp_path: Path) -> None:
+    """Words and topics reach the prompt; the reply is saved next to the file."""
+    words = tmp_path / "words.md"
+    words.write_text("talo\nkissa\n")
+    openai_cls = _fake_openai()
+    with (
+        patch("anki_helpers.cli.OpenAI", openai_cls),
+        patch.dict("os.environ", {"API_KEY": "test_api_key"}),
+    ):
+        result = CliRunner().invoke(
+            cli, ["generate-examples-for-word", str(words), "--topics", "sauna, food"]
+        )
+
+    assert result.exit_code == 0, result.output
+    assert (tmp_path / "examples-table.md").read_text() == "mock response"
+    messages = openai_cls.return_value.chat.completions.create.call_args.kwargs[
+        "messages"
+    ]
+    prompt = messages[1]["content"]
+    assert "generate 3 example sentences" in prompt
+    assert "theme of sauna\n" in prompt
+    assert "theme of food\n" in prompt
+    assert "theme of AI" not in prompt
+    assert prompt.endswith("talo\nkissa\n")
+
+
+def test_generate_examples_for_word_output_option(tmp_path: Path) -> None:
+    """--output overrides the default file location."""
+    words = tmp_path / "words.md"
+    words.write_text("talo\n")
+    out = tmp_path / "custom.md"
+    with (
+        patch("anki_helpers.cli.OpenAI", _fake_openai()),
+        patch.dict("os.environ", {"API_KEY": "test_api_key"}),
+    ):
+        result = CliRunner().invoke(
+            cli, ["generate-examples-for-word", str(words), "--output", str(out)]
+        )
+    assert result.exit_code == 0, result.output
+    assert out.read_text() == "mock response"
+    assert not (tmp_path / "examples-table.md").exists()
+
+
+def test_generate_examples_for_word_errors(tmp_path: Path) -> None:
+    """Missing API key and empty file are reported without calling OpenAI."""
+    words = tmp_path / "words.md"
+    words.write_text("talo\n")
+    result = CliRunner().invoke(cli, ["generate-examples-for-word", str(words)])
+    assert "API_KEY not found" in result.output
+
+    words.write_text("  \n")
+    openai_cls = _fake_openai()
+    with (
+        patch("anki_helpers.cli.OpenAI", openai_cls),
+        patch.dict("os.environ", {"API_KEY": "test_api_key"}),
+    ):
+        result = CliRunner().invoke(cli, ["generate-examples-for-word", str(words)])
+    assert "Words file is empty" in result.output
+    openai_cls.assert_not_called()

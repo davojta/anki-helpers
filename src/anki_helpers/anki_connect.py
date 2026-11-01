@@ -6,6 +6,8 @@ from typing import Any, cast
 import requests
 
 DEFAULT_URL = "http://localhost:8765"
+# Bound for binary-searching a card's relative due day (about 100 years).
+MAX_DUE_DAYS = 36_500
 
 
 class AnkiConnectError(Exception):
@@ -234,3 +236,46 @@ class AnkiConnect:
                 card["interval"] = intervals[card_id]
 
         return cards_info
+
+    def find_cards(self, query: str) -> list[int]:
+        """Find card IDs matching an Anki search query.
+
+        Args:
+            query: Anki search syntax, e.g. ``flag:1 prop:due<10``.
+
+        Returns:
+            Matching card IDs.
+        """
+        return self._invoke("findCards", query=query)
+
+    def cards_info(self, card_ids: list[int]) -> list[dict[str, Any]]:
+        """Get ``cardsInfo`` records for the given cards."""
+        if not card_ids:
+            return []
+        return self._invoke("cardsInfo", cards=card_ids)
+
+    def notes_info(self, note_ids: list[int]) -> list[dict[str, Any]]:
+        """Get ``notesInfo`` records for the given notes."""
+        if not note_ids:
+            return []
+        return self._invoke("notesInfo", notes=note_ids)
+
+    def today(self, card_id: int, raw_due: int) -> int:
+        """Return the collection's day number for today.
+
+        ``cardsInfo`` gives review cards an absolute day number, but only
+        ``prop:due`` searches know today's offset. Binary-search the card's
+        relative due with ``prop:due<K`` (about 17 queries) and subtract it.
+
+        Args:
+            card_id: A card in a day-based queue (review or day-learn).
+            raw_due: That card's ``due`` from ``cardsInfo``.
+        """
+        lo, hi = -MAX_DUE_DAYS, MAX_DUE_DAYS  # relative due is in [lo, hi)
+        while hi - lo > 1:
+            mid = (lo + hi) // 2
+            if self.find_cards(f"cid:{card_id} prop:due<{mid}"):
+                hi = mid
+            else:
+                lo = mid
+        return raw_due - lo
